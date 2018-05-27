@@ -3,3 +3,4 @@
 test_vm
 test
 *.kdev4
+*.kate-swp
