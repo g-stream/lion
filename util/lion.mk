@@ -17,6 +17,7 @@ cli_head=${wildcard ${cli_dir}/*h}
 test_source=${wildcard ${test_dir}/*.c}
 test_object=${addprefix ${build_dir}/test/, ${patsubst %.c, %.o, ${notdir ${test_source}}}}
 test_target=${patsubst %.o, %, ${test_object}}
+all: test lion
 test:${test_target}
 ${test_target}:%:%.o ${vm_object}
 	${cc} -o $@ $^ ${cflag}
@@ -24,6 +25,8 @@ ${test_object}:${build_dir}/test/%.o:${test_dir}/%.c ${vm_source} ${vm_head}
 	${cc} -c $< ${cflag} -o $@
 ${vm_object}:${build_dir}/vm/%.o:${vm_dir}/%.c ${vm_source} ${vm_head}
 	${cc} -c $< ${cflag} -o $@
+lion:${cli_dir}/lion.c
+	${cc} -o $@ $< ${cflag}
 clean:
 	rm ${build_dir}/*/*
-.PHONY:test
+.PHONY:test all
