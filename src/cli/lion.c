@@ -15,6 +15,7 @@ int main(int argc, char** argv){
     if(argc == 1){
         char str[100];
         while(1){
+            printf("li >> ");
             fgets(str, 100, stdin);
             printf("you input: %s\n", str);
         }
