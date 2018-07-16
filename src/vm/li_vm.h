@@ -13,5 +13,9 @@ typedef struct sGlobalState {
 void run_vm(const char* src);
 void run_repl();
 
+typedef struct sLionState {
+  CommonHeader;
+  
+} LionState;
 
 #endif

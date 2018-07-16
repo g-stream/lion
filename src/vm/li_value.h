@@ -75,8 +75,28 @@ typedef struct ObjClass{
 #define AS_OBJ(value) ((Obj*)(uintptr_t)((value) & ~(SIGN_BIT | QNAN)))
 #define AS_STR_INDEX(value) ((uint32_t)((value) & ~(SIGN_BIT|QNAN|MASK_TAG)))
 
-
-
+void value2string(Value v){
+    switch(v){
+        case FALSE_VAL:
+            print("false\n");
+            break;
+        case TRUE_VAL:
+            print("true\n");
+            break;
+        case NULL_VAL:
+            print("null\n");
+            break;
+        case UNDEFINED_VAL:
+            print("undefined\n");
+            break;
+        default:
+            if(IS_NUM(v)){
+                print("%d\n", (double)v);
+            }else{
+                print("haven't implemented\n");
+            }
+    }
+}
 
 
 typedef enum{
@@ -109,6 +129,7 @@ typedef struct sObjModule{
 }ObjModule;
 typedef struct sObjUpvalue{
 }ObjUpvalue;
+
 
 
 #endif

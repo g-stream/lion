@@ -1,5 +1,3 @@
-#ifndef li_compiler_h
-#define li_compiler_h
 #include "li_compiler.h"
 #include "li_mem.h"
 #include "li_config.h"
@@ -131,11 +129,7 @@ li_tokens
 
 
 typedef uint32_t instruction_t
-<<<<<<< HEAD
 #define cast(type, v) ((type) (v))
-=======
-
->>>>>>> 8ae7a26a57297e527c71cdfaa0fbb7c482ea9b11
 /*
 ** size and position of opcode arguments.
 */
@@ -171,11 +165,7 @@ typedef uint32_t instruction_t
 
 
 /* creates a mask with 'n' 1 bits at position 'p' */
-<<<<<<< HEAD
 #define MASK1(n,p)	((~((~(instruction_t)0)<<(n)))<<(p))
-=======
-#define MASK1(n,p)	((~((~(Instruction)0)<<(n)))<<(p))
->>>>>>> 8ae7a26a57297e527c71cdfaa0fbb7c482ea9b11
 
 /* creates a mask with 'n' 0 bits at position 'p' */
 #define MASK0(n,p)	(~MASK1(n,p))
@@ -190,19 +180,11 @@ typedef uint32_t instruction_t
 
 #define GET_OPCODE(i)	(cast(OpCode, ((i)>>POS_OP) & MASK1(SIZE_OP,0)))
 #define SET_OPCODE(i,o)	((i) = (((i)&MASK0(SIZE_OP,POS_OP)) | \
-<<<<<<< HEAD
 		((cast(instruction_t, o)<<POS_OP)&MASK1(SIZE_OP,POS_OP))))
 
 #define getarg(i,pos,size)	(cast(int, ((i)>>pos) & MASK1(size,0)))
 #define setarg(i,v,pos,size)	((i) = (((i)&MASK0(size,pos)) | \
                 ((cast(instruction_t, v)<<pos)&MASK1(size,pos))))
-=======
-		((cast(Instruction, o)<<POS_OP)&MASK1(SIZE_OP,POS_OP))))
-
-#define getarg(i,pos,size)	(cast(int, ((i)>>pos) & MASK1(size,0)))
-#define setarg(i,v,pos,size)	((i) = (((i)&MASK0(size,pos)) | \
-                ((cast(Instruction, v)<<pos)&MASK1(size,pos))))
->>>>>>> 8ae7a26a57297e527c71cdfaa0fbb7c482ea9b11
 
 #define GETARG_A(i)	getarg(i, POS_A, SIZE_A)
 #define SETARG_A(i,v)	setarg(i, v, POS_A, SIZE_A)
@@ -223,7 +205,6 @@ typedef uint32_t instruction_t
 #define SETARG_sBx(i,b)	SETARG_Bx((i),cast(unsigned int, (b)+MAXARG_sBx))
 
 
-<<<<<<< HEAD
 #define GEN_ABC(o,a,b,c)	((cast(instruction_t, o)<<POS_OP) \
 			| (cast(instruction_t, a)<<POS_A) \
 			| (cast(instruction_t, b)<<POS_B) \
@@ -235,20 +216,6 @@ typedef uint32_t instruction_t
 
 #define GEN_Ax(o,a)		((cast(instruction_t, o)<<POS_OP) \
 			| (cast(instruction_t, a)<<POS_Ax))
-=======
-#define GEN_ABC(o,a,b,c)	((cast(Instruction, o)<<POS_OP) \
-			| (cast(Instruction, a)<<POS_A) \
-			| (cast(Instruction, b)<<POS_B) \
-			| (cast(Instruction, c)<<POS_C))
-
-#define GEN_ABx(o,a,bc)	((cast(Instruction, o)<<POS_OP) \
-			| (cast(Instruction, a)<<POS_A) \
-			| (cast(Instruction, bc)<<POS_Bx))
-
-#define GEN_Ax(o,a)		((cast(Instruction, o)<<POS_OP) \
-			| (cast(Instruction, a)<<POS_Ax))
->>>>>>> 8ae7a26a57297e527c71cdfaa0fbb7c482ea9b11
-
 
 /*
 ** Macros to operate RK indices
@@ -283,40 +250,21 @@ typedef uint32_t instruction_t
 
 
 #define li_opcodes OPCODE(NULL,         2)\
-<<<<<<< HEAD
-                   OPCODE(ADD,          0)\ /*	A B C	R(A) := RK(B) + RK(C)				*/
-                   OPCODE(SUB,          0)\ /*	A B C	R(A) := RK(B) - RK(C)				*/
-                   OPCODE(MUL,          0)\ /*	A B C	R(A) := RK(B) * RK(C)				*/
-                   OPCODE(MOD,          0)\ /*	A B C	R(A) := RK(B) % RK(C)				*/
-                   OPCODE(POW,          0)\ /*	A B C	R(A) := RK(B) ^ RK(C)				*/
-                   OPCODE(DIV,          0)\ /*	A B C	R(A) := RK(B) / RK(C)				*/
-                   OPCODE(IDIV,         0)\ /*	A B C	R(A) := RK(B) // RK(C)				*/
-                   OPCODE(BAND,         0)\ /*	A B C	R(A) := RK(B) & RK(C)				*/
-                   OPCODE(BOR,          0)\ /*	A B C	R(A) := RK(B) | RK(C)				*/
-                   OPCODE(BXOR,         0)\ /*	A B C	R(A) := RK(B) ~ RK(C)				*/
-                   OPCODE(SHL,          0)\ /*	A B C	R(A) := RK(B) << RK(C)				*/
-                   OPCODE(SHR,          0)\ /*	A B C	R(A) := RK(B) >> RK(C)				*/
-                   OPCODE(UNM,          1)\ /*	A B	R(A) := -R(B)					*/
-                   OPCODE(BNOT,         1)\ /*	A B	R(A) := ~R(B)					*/
-                   OPCODE(NOT,          1)\ /*	A B	R(A) := not R(B)				*/
+                   OPCODE(ADD,          0) /*	A B C	R(A) := RK(B) + RK(C)				*/\
+                   OPCODE(SUB,          0) /*	A B C	R(A) := RK(B) - RK(C)				*/\
+                   OPCODE(MUL,          0) /*	A B C	R(A) := RK(B) * RK(C)				*/\
+                   OPCODE(MOD,          0) /*	A B C	R(A) := RK(B) % RK(C)				*/\
+                   OPCODE(POW,          0) /*	A B C	R(A) := RK(B) ^ RK(C)				*/\
+                   OPCODE(DIV,          0) /*	A B C	R(A) := RK(B) / RK(C)				*/\
+                   OPCODE(IDIV,         0) /*	A B C	R(A) := RK(B) // RK(C)				*/\
+                   OPCODE(BAND,         0) /*	A B C	R(A) := RK(B) & RK(C)				*/\
+                   OPCODE(BOR,          0) /*	A B C	R(A) := RK(B) | RK(C)				*/\
+                   OPCODE(BXOR,         0) /*	A B C	R(A) := RK(B) ~ RK(C)				*/\
+                   OPCODE(SHL,          0) /*	A B C	R(A) := RK(B) << RK(C)				*/\
+                   OPCODE(SHR,          0) /*	A B C	R(A) := RK(B) >> RK(C)				*/\
+                   OPCODE(UNM,          1) /*	A B	R(A) := -R(B)					*/\
+                   OPCODE(BNOT,         1) /*	A B	R(A) := ~R(B)					*/\
+                   OPCODE(NOT,          1) /*	A B	R(A) := not R(B)				*/
                    
-=======
-                   OPCODE(ADD,          0)\/*	A B C	R(A) := RK(B) + RK(C)				*/
-                   OPCODE(SUB,          0)\/*	A B C	R(A) := RK(B) - RK(C)				*/
-                   OPCODE(MUL,          0)\/*	A B C	R(A) := RK(B) * RK(C)				*/
-                   OPCODE(MOD,          0)\/*	A B C	R(A) := RK(B) % RK(C)				*/
-                   OPCODE(POW,          0)\/*	A B C	R(A) := RK(B) ^ RK(C)				*/
-                   OPCODE(DIV,          0)\/*	A B C	R(A) := RK(B) / RK(C)				*/
-                   OPCODE(IDIV,         0)\/*	A B C	R(A) := RK(B) // RK(C)				*/
-                   OPCODE(BAND,         0)\/*	A B C	R(A) := RK(B) & RK(C)				*/
-                   OPCODE(BOR,          0)\/*	A B C	R(A) := RK(B) | RK(C)				*/
-                   OPCODE(BXOR,         0)\/*	A B C	R(A) := RK(B) ~ RK(C)				*/
-                   OPCODE(SHL,          0)\/*	A B C	R(A) := RK(B) << RK(C)				*/
-                   OPCODE(SHR,          0)\/*	A B C	R(A) := RK(B) >> RK(C)				*/
-                   OPCODE(UNM,          1)\/*	A B	R(A) := -R(B)					*/
-                   OPCODE(BNOT,         1)\/*	A B	R(A) := ~R(B)					*/
-                   OPCODE(NOT,          1)\/*	A B	R(A) := not R(B)				*/
->>>>>>> 8ae7a26a57297e527c71cdfaa0fbb7c482ea9b11
-
 
 #endif
