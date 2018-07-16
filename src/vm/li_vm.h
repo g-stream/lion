@@ -1,19 +1,17 @@
 #ifndef li_vm_h
 #define li_vm_h
-typedef struct sGlobalState GlobalState;
-typedef struct sCallInfo CallInfo;
-typedef struct 
-
+#include "li_value.h"
+typedef struct sCallInfo {
+    
+} CallInfo
 
 typedef struct sGlobalState {
     CallInfo* callinfo
 } GlobalState
 
 
+void run_vm(const char* src);
+void run_repl();
 
-typedef struct sCallInfo {
-    UpValue upvalues;
-    
-} CallInfo
-    
+
 #endif
