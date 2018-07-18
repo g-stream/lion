@@ -1,10 +1,9 @@
 #ifndef li_value_h
 #define li_value_h
-
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-
 typedef enum {
   OBJ_CLASS,
   OBJ_CLOSURE,
@@ -18,16 +17,8 @@ typedef enum {
   OBJ_UPVALUE
 } ObjType;
 
-typedef struct ObjClass ObjClass;
 
-
-#define CommonHeader ObjClass *next; bool isDark; ObjType type
-typedef struct ObjClass{
-    CommonHeader;
-} ObjClass;
-
-
-#define uint64_t Value;
+typedef uint64_t Value;
 #define SIGN_BIT ((uint64_t)1 << 63)
 #define QNAN ((uint64_t)0X7ff0000000000000)
 
@@ -54,7 +45,7 @@ typedef struct ObjClass{
 #define NULL_VAL      ((Value)(uint64_t)(QNAN | TAG_NULL))
 #define FALSE_VAL     ((Value)(uint64_t)(QNAN | TAG_FALSE))
 #define TRUE_VAL      ((Value)(uint64_t)(QNAN | TAG_TRUE))
-#define UNDEFINED_VAL ((Value)(uint64_t)(QNAN | TAG_UNDEFINED))
+#define UNDEF_VAL     ((Value)(uint64_t)(QNAN | TAG_UNDEF))
 
 #define IS_NUM(value) (((value) & QNAN) != QNAN)
 #define IS_OBJ(value) (((value) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
@@ -75,29 +66,6 @@ typedef struct ObjClass{
 #define AS_OBJ(value) ((Obj*)(uintptr_t)((value) & ~(SIGN_BIT | QNAN)))
 #define AS_STR_INDEX(value) ((uint32_t)((value) & ~(SIGN_BIT|QNAN|MASK_TAG)))
 
-void value2string(Value v){
-    switch(v){
-        case FALSE_VAL:
-            print("false\n");
-            break;
-        case TRUE_VAL:
-            print("true\n");
-            break;
-        case NULL_VAL:
-            print("null\n");
-            break;
-        case UNDEFINED_VAL:
-            print("undefined\n");
-            break;
-        default:
-            if(IS_NUM(v)){
-                print("%d\n", (double)v);
-            }else{
-                print("haven't implemented\n");
-            }
-    }
-}
-
 
 typedef enum{
     VAL_NULL,
@@ -108,6 +76,15 @@ typedef enum{
     VAL_UNDEF,
     VAL_OBJ
 } ValueType;
+
+
+#define CommonHeader ObjClass *next; bool isDark; ObjType type
+
+typedef struct sObjString{
+    uint32_t length;
+    uint32_t hash;
+    char* content;
+} ObjString;
 
 typedef struct sObjClass{
 }ObjClass;

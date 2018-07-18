@@ -4,15 +4,15 @@ source_dir=src
 vm_dir=${source_dir}/vm
 cli_dir=${source_dir}/cli
 include_dir=${source_dir}/include
-module_dir=${source_dir}module
+module_dir=${source_dir}/module
 test_dir=test
-cflag=-g -Wall -I ${source_dir}
+cflag=-g -Wall -I ${source_dir}/vm
 vm_source=${wildcard ${vm_dir}/*.c}
 vm_head=${wildcard ${vm_dir}/*.h}
 vm_object=${addprefix ${build_dir}/vm/, ${patsubst %.c, %.o, ${notdir ${vm_source}}}}
 
 cli_source=${wildcard ${cli_dir}/*.c}
-cli_head=${wildcard ${cli_dir}/*h}
+cli_head=${wildcard ${cli_dir}/*.h}
 
 test_source=${wildcard ${test_dir}/*.c}
 test_object=${addprefix ${build_dir}/test/, ${patsubst %.c, %.o, ${notdir ${test_source}}}}

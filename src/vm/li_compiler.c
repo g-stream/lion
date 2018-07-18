@@ -13,6 +13,13 @@
 
 #define MAX_INTERPOLATION_NESTING 8
 
+
+
+
+/*
+ * TOKEN lexer
+ */
+
 #define li_tokens TOKEN(LEFT_PAREN,       '(',       1)\
                   TOKEN(RIGHT_PAREN,      ')',       1)\
                   TOKEN(LEFT_BRACKET,     '[',       1)\
@@ -55,7 +62,7 @@
                   TOKEN(TRUE,             "true",    4)\
                   TOKEN(IMPORT,           "import"  ,6)\
                   TOKEN(IS,               "is",      2)\
-                  TOKEN(NULL,             "null",    4)\
+                  TOKEN(NIL,              "nil",    3)\
                   TOKEN(RETURN,           "return",  6)\
                   TOKEN(VAR,              "var",     3)\
                   TOKEN(WHILE,            "while",   5)\
@@ -74,6 +81,7 @@
  *  for one char token, use char to store its value
  *  for two or more char token, use const char* to store its value
 */
+
 #define DEFINE_TOKEN_CONTENT0(token, c) 
 #define DEFINE_TOKEN_CONTENT1(token, c) char TOKEN_##token##_CONTENT = c;
 #define DEFINE_TOKEN_CONTENT_OTHER(token, str) const char* TOKEN_##token##_CONTENT = str;
@@ -88,17 +96,13 @@
 #define TOKEN(token, token_content, num) DEFINE_TOKEN_CONTENT##num(token, token_content)
 li_tokens
 #undef TOKEN
+
 //get li_tokens_type
 typedef enum {
 #define TOKEN(token, token_content, num) TOKEN_##token,
 li_tokens
 #undef TOKEN
 } TokenType;
-/*
- *  define token compare functions
- *  depending on its length, dispatch to different functions to compare it
- * 
-*/
 
 #define DEFINE_COMPARE_WITH_TOKEN_XXX0(token, num)
 #define DEFINE_COMPARE_WITH_TOKEN_XXX1(token, num) bool COMPARE_WITH_TOKEN_##token(const char* str) { return *str == TOKEN_##token##_CONTENT;}
@@ -118,17 +122,91 @@ li_tokens
 #define DEFINE_COMPARE_WITH_TOKEN_XXX8(token, num) DEFINE_COMPARE_WITH_TOKEN_XXX_OTHER(token, num)
 
 //define token compare functions, remember these functions won't check the string's length is less than num
-#define Token(token, token_content, num) DEFINE_COMPARE_WITH_TOKEN_XXX##num(token, num)
+#define TOKEN(token, token_content, num) DEFINE_COMPARE_WITH_TOKEN_XXX##num(token, num)
 li_tokens
-#undef Token
+#undef TOKEN
+
+
+const char* token_name[] = {
+#define TOKEN(token, token_content, num) CVT_TOKEN_NAME(TOKEN_##token)
+#define CVT_TOKEN_NAME(token_name) #token_name ,
+li_tokens
+#undef TOKEN
+#undef CVT_TOKEN_NAME
+};
+
+
+typedef struct{
+    size_t start;
+    size_t end;
+} StringSlice;
+
+typedef struct sLexerState{
+    const char*  src;
+    const char*  cur;
+    size_t       numRow;
+    size_t       numCol;
+    TokenType    curToken;
+    StringSlice  stringSlice;
+    TokenType    nextToken;
+}LexerState;
+
+void initLexerState(LexerState* lexer_state){
+    lexer_state->src = "for i in a print a";
+}
+
+void printStringSlice(LexerState* lexer_state, StringSlice slice){
+    const char* p = lexer_state->src;
+    p += slice.start;
+    int n = slice.end-slice.start;
+    while(n--){
+        putchar(*(p++));
+    }
+}
+
+bool isAlphbeta(const char* c){
+    if('a' <= *c && *c <= 'z' || 'A' <= *c && *c <= 'Z')
+        return true;
+    return false;
+}
+bool isLow(const char* c){
+    if('a' <= *c && *c <= 'z')
+        return true;
+    return false;
+}
+bool isUp(const char* c){
+    if('A' <= *c && *c <= 'Z')
+        return true;
+    return false;
+}
+bool isNum(const char* c){
+    if('0' <= *c && *c <= '9')
+        return true;
+    return false;
+}
+bool isCharOfVarStart(const char* c){
+    if(*c == '_' || isAlphbeta(c) || isNum(c))
+        return true;
+    return false;
+}
 
 
 
 
+void test_li_ocmpiler(){
+    LexerState lexer_state;
+    initLexerState(&lexer_state);
+    StringSlice slice = {3,5};
+    printStringSlice(&lexer_state, slice);
+}
 
 
 
-typedef uint32_t instruction_t
+/*
+ * OPCODE operator
+ */
+
+typedef uint32_t instruction_t;
 #define cast(type, v) ((type) (v))
 /*
 ** size and position of opcode arguments.
@@ -154,7 +232,6 @@ typedef uint32_t instruction_t
 */
 #define MAXARG_Bx        ((1<<SIZE_Bx)-1)
 #define MAXARG_sBx        (MAXARG_Bx>>1)         /* 'sBx' is signed */
-#else
 
 #define MAXARG_Ax	((1<<SIZE_Ax)-1)
 
@@ -171,11 +248,7 @@ typedef uint32_t instruction_t
 #define MASK0(n,p)	(~MASK1(n,p))
 
 /*
-<<<<<<< HEAD
-** the following macros help to manipulate instruction_ts
-=======
-** the following macros help to manipulate instructions
->>>>>>> 8ae7a26a57297e527c71cdfaa0fbb7c482ea9b11
+** the following macros help to manipulate instruction_t
 */
 
 #define GET_OPCODE(i)	(cast(OpCode, ((i)>>POS_OP) & MASK1(SIZE_OP,0)))
@@ -232,7 +305,6 @@ typedef uint32_t instruction_t
 
 #if !defined(MAXINDEXRK)  /* (for debugging only) */
 #define MAXINDEXRK	(BITRK - 1)
-#endif
 
 /* code a constant index as a RK value */
 #define RKASK(x)	((x) | BITRK)
@@ -267,4 +339,7 @@ typedef uint32_t instruction_t
                    OPCODE(NOT,          1) /*	A B	R(A) := not R(B)				*/
                    
 
+
+
+                   
 #endif

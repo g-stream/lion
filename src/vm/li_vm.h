@@ -3,11 +3,11 @@
 #include "li_value.h"
 typedef struct sCallInfo {
     
-} CallInfo
+} CallInfo;
 
 typedef struct sGlobalState {
-    CallInfo* callinfo
-} GlobalState
+    CallInfo* callinfo;
+} GlobalState;
 
 
 void run_vm(const char* src);
