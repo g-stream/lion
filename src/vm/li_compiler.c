@@ -2,6 +2,9 @@
 #include "li_mem.h"
 #include "li_config.h"
 #include "li_vm.h"
+#include "li_value.h"
+#include "stdlib.h"
+#include "li_debug.h"
 
 #define MAX_LOCALS 256
 
@@ -141,18 +144,31 @@ typedef struct{
     size_t end;
 } StringSlice;
 
+typedef struct sToken{
+    TokenType type;
+    Value     value;
+} Token;
 typedef struct sLexerState{
     const char*  src;
     const char*  cur;
+    const char*  curRow;
     size_t       numRow;
     size_t       numCol;
-    TokenType    curToken;
+    Token        curToken;
     StringSlice  stringSlice;
-    TokenType    nextToken;
+    Token        nextToken;
 }LexerState;
 
+
+
+
+#define lexer_pt (lexer_state->cur)
+#define lexer_currow_pt (lexer_state->curRow)
+
 void initLexerState(LexerState* lexer_state){
-    lexer_state->src = "for i in a print a";
+    lexer_state->src = "12345678";
+    lexer_state->curRow = lexer_state->src + 3;
+    lexer_state->cur = lexer_state->src + 5;
 }
 
 void printStringSlice(LexerState* lexer_state, StringSlice slice){
@@ -164,8 +180,24 @@ void printStringSlice(LexerState* lexer_state, StringSlice slice){
     }
 }
 
+void lexerErrorWithHightlight(LexerState* lexer_state, ErrorType err, const char* info){
+    printError(err, info);
+    putchar('\n');
+    size_t pos = lexer_pt - lexer_currow_pt;
+    const int size = 1000;
+    char row[size];
+    const char* lp = lexer_currow_pt;
+    int i = 0;
+    while(*lp != '\0' && *lp != '\n' && *lp != '\r'){
+        row[i++] = *(lp++);
+    }
+    row[i++] = '\0';
+    assert(i < size);
+    printWithHighlight(row, pos);
+}
+
 bool isAlphbeta(const char* c){
-    if('a' <= *c && *c <= 'z' || 'A' <= *c && *c <= 'Z')
+    if(('a' <= *c && *c <= 'z') || ('A' <= *c && *c <= 'Z'))
         return true;
     return false;
 }
@@ -189,7 +221,43 @@ bool isCharOfVarStart(const char* c){
         return true;
     return false;
 }
+bool isHex(const char* c){
+    if(('A' <= *c && *c <= 'F') || ('a' <= *c && *c <= 'F') || isNum(c))
+        return true;
+    return false;
+}
+int hexToNum(const char* c){
+    assert(isAlphbeta(c) || isNum(c));
+    if(isNum(c)){
+        return *c - '0';
+    } 
+    else if(isUp(c)){
+        return *c - 'A' + 10;
+    }
+    else{
+        return *c - 'a' + 10;
+    }
+}
 
+bool isOneOfChars(const char* c, const char* pt){
+    while(*pt != '\0')
+        if(*c == *pt)
+            return true;
+    return false;
+}
+void readNum(LexerState* lexer_state){
+    double v = 0;
+    if(*lexer_pt == '0' && isOneOfChars(lexer_pt+1, "xX")){
+       lexer_pt += 2;
+       while(isHex(lexer_pt)){
+           v = v*16 + hexToNum(lexer_pt++);
+       }
+       lexer_state->curToken.type  = TOKEN_NUMBER;
+       lexer_state->curToken.value = v;
+       return;
+    }
+    while(
+}
 
 
 
@@ -198,6 +266,8 @@ void test_li_ocmpiler(){
     initLexerState(&lexer_state);
     StringSlice slice = {3,5};
     printStringSlice(&lexer_state, slice);
+    printError(ParsingError, "unexpected char ");
+    lexerErrorWithHightlight(&lexer_state, ParsingError, "slkdjfkljsadfj error ");
 }
 
 

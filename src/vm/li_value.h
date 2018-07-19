@@ -66,6 +66,13 @@ typedef uint64_t Value;
 #define AS_OBJ(value) ((Obj*)(uintptr_t)((value) & ~(SIGN_BIT | QNAN)))
 #define AS_STR_INDEX(value) ((uint32_t)((value) & ~(SIGN_BIT|QNAN|MASK_TAG)))
 
+typedef union {
+    Value    value;
+    double   asDouble;
+    uint64_t asUint64;
+    uint32_t as2Uint32;
+} ValueBit;
+
 
 typedef enum{
     VAL_NULL,
