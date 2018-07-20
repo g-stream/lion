@@ -5,7 +5,9 @@
 #include "li_value.h"
 #include "stdlib.h"
 #include "li_debug.h"
-
+#include "li_util.h"
+#include "stdlib.h"
+#include "stdio.h"
 #define MAX_LOCALS 256
 
 #define MAX_UPVALUES 256
@@ -15,8 +17,6 @@
 #define MAX_JUMP (1 << 16)
 
 #define MAX_INTERPOLATION_NESTING 8
-
-
 
 
 /*
@@ -151,6 +151,7 @@ typedef struct sToken{
 typedef struct sLexerState{
     const char*  src;
     const char*  cur;
+    const char*  curTokenStart;
     const char*  curRow;
     size_t       numRow;
     size_t       numCol;
@@ -162,13 +163,15 @@ typedef struct sLexerState{
 
 
 
-#define lexer_pt (lexer_state->cur)
-#define lexer_currow_pt (lexer_state->curRow)
-
+#define cur_pt (lexer_state->cur)
+#define currow_pt (lexer_state->curRow)
+#define cur_char (*cur_pt)
+#define next_char (*(cur_pt + 1))
+#define start_pt  (lexer_state->curTokenStart)
 void initLexerState(LexerState* lexer_state){
-    lexer_state->src = "12345678";
-    lexer_state->curRow = lexer_state->src + 3;
-    lexer_state->cur = lexer_state->src + 5;
+    lexer_state->src = "1234e-1";
+    lexer_state->curRow = lexer_state->src;
+    lexer_state->cur = lexer_state->src;
 }
 
 void printStringSlice(LexerState* lexer_state, StringSlice slice){
@@ -183,81 +186,70 @@ void printStringSlice(LexerState* lexer_state, StringSlice slice){
 void lexerErrorWithHightlight(LexerState* lexer_state, ErrorType err, const char* info){
     printError(err, info);
     putchar('\n');
-    size_t pos = lexer_pt - lexer_currow_pt;
+    size_t pos = cur_pt - currow_pt;
     const int size = 1000;
     char row[size];
-    const char* lp = lexer_currow_pt;
+    const char* lp = currow_pt;
     int i = 0;
     while(*lp != '\0' && *lp != '\n' && *lp != '\r'){
         row[i++] = *(lp++);
     }
     row[i++] = '\0';
     assert(i < size);
+    lexer_state->curToken.type = TOKEN_ERROR;
+    lexer_state->curToken.value = UNDEF_VAL;
     printWithHighlight(row, pos);
 }
 
-bool isAlphbeta(const char* c){
-    if(('a' <= *c && *c <= 'z') || ('A' <= *c && *c <= 'Z'))
-        return true;
-    return false;
-}
-bool isLow(const char* c){
-    if('a' <= *c && *c <= 'z')
-        return true;
-    return false;
-}
-bool isUp(const char* c){
-    if('A' <= *c && *c <= 'Z')
-        return true;
-    return false;
-}
-bool isNum(const char* c){
-    if('0' <= *c && *c <= '9')
-        return true;
-    return false;
-}
-bool isCharOfVarStart(const char* c){
-    if(*c == '_' || isAlphbeta(c) || isNum(c))
-        return true;
-    return false;
-}
-bool isHex(const char* c){
-    if(('A' <= *c && *c <= 'F') || ('a' <= *c && *c <= 'F') || isNum(c))
-        return true;
-    return false;
-}
-int hexToNum(const char* c){
-    assert(isAlphbeta(c) || isNum(c));
-    if(isNum(c)){
-        return *c - '0';
-    } 
-    else if(isUp(c)){
-        return *c - 'A' + 10;
-    }
-    else{
-        return *c - 'a' + 10;
-    }
-}
-
-bool isOneOfChars(const char* c, const char* pt){
-    while(*pt != '\0')
-        if(*c == *pt)
-            return true;
-    return false;
-}
 void readNum(LexerState* lexer_state){
     double v = 0;
-    if(*lexer_pt == '0' && isOneOfChars(lexer_pt+1, "xX")){
-       lexer_pt += 2;
-       while(isHex(lexer_pt)){
-           v = v*16 + hexToNum(lexer_pt++);
+    start_pt = cur_pt;
+    if(*cur_pt == '0' && isOneOfChars(cur_pt + 1, "xX")){
+       cur_pt += 2;
+       while(isHex(cur_pt)){
+           v = v*16 + hexToNum(cur_pt++);
        }
+       ValueBit value_bit;
+       value_bit.asDouble = v;
        lexer_state->curToken.type  = TOKEN_NUMBER;
-       lexer_state->curToken.value = v;
+       lexer_state->curToken.value = value_bit.asUint64;
+       if(isCharOfVarStart(cur_pt)){
+          lexerErrorWithHightlight(lexer_state, SyntaxError, "must split a number");
+          return;
+       }
        return;
     }
-    while(
+    while(isNum(cur_pt)){
+        cur_pt++;
+    }
+    if(cur_char == '.'){
+        cur_pt++;
+        while(isNum(cur_pt)){
+            cur_pt++;
+        }
+    }
+    if(isOneOfChars(cur_pt, "eE")){
+        cur_pt++;
+        if(isOneOfChars(cur_pt, "+-")){
+            cur_pt++;
+        }
+        if(!isNum(cur_pt)){
+            lexerErrorWithHightlight(lexer_state, SyntaxError, "lack exponent part");
+            return;
+        }
+        while(isNum(cur_pt)) cur_pt++;
+    }
+    if(isCharOfVarStart(cur_pt)){
+        lexerErrorWithHightlight(lexer_state, SyntaxError, "must split a number");
+        return;
+    }
+    v = strtold(start_pt, NULL);
+    ValueBit value_bit;
+    value_bit.asDouble = v;
+    lexer_state->curToken.type = TOKEN_NUMBER;
+    lexer_state->curToken.value = value_bit.asUint64;
 }
+
 
 
 
@@ -265,9 +257,10 @@ void test_li_ocmpiler(){
     LexerState lexer_state;
     initLexerState(&lexer_state);
     StringSlice slice = {3,5};
-    printStringSlice(&lexer_state, slice);
-    printError(ParsingError, "unexpected char ");
-    lexerErrorWithHightlight(&lexer_state, ParsingError, "slkdjfkljsadfj error ");
+    readNum(&lexer_state);
+    ValueBit bit;
+    bit.asUint64 = lexer_state.curToken.value;
+    printf("%f", bit.asDouble);
 }
 
 

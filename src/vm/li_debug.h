@@ -7,7 +7,8 @@
  */
 #define li_errors ERROR(CompilerError)\
                   ERROR(RuntimeError)\
-                  ERROR(ParsingError)
+                  ERROR(ParsingError)\
+                  ERROR(SyntaxError)
                   
 #define ERROR(err) err,
 typedef enum {
