@@ -10,9 +10,9 @@ bool isAlphbeta(const char* c);
 bool isLow(const char* c);
 bool isUp(const char* c);
 bool isNum(const char* c);
-bool isCharOfVarStart(const char* c);
+bool isCharOfVar(const char* c);
 bool isHex(const char* c);
 int hexToNum(const char* c);
 bool isOneOfChars(const char* c, const char* pt);
-
+bool isSkip(const char* c);
 #endif

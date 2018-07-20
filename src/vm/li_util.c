@@ -37,7 +37,7 @@ bool isNum(const char* c){
         return true;
     return false;
 }
-bool isCharOfVarStart(const char* c){
+bool isCharOfVar(const char* c){
     if(*c == '_' || isAlphbeta(c) || isNum(c))
         return true;
     return false;
@@ -67,4 +67,8 @@ bool isOneOfChars(const char* c, const char* pt){
         pt++;
     }
     return false;
+}
+
+bool isSkip(const char* c){
+    return isOneOfChars(c, " \n\r\t");
 }

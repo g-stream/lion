@@ -7,7 +7,7 @@ void value2string(Value v){
         case TRUE_VAL:
             printf("true\n");
             break;
-        case NULL_VAL:
+        case NIL_VAL:
             printf("null\n");
             break;
         case UNDEF_VAL:

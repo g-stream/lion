@@ -30,7 +30,7 @@ typedef uint64_t Value;
  * If the top most bit is setted, the value is a class, the lowest 32 bit is used to reperesent the pointer to the value
  */
 #define TAG_NAN       ((uint64_t)0 << 49)
-#define TAG_NULL      ((uint64_t)1 << 49)
+#define TAG_NIL       ((uint64_t)1 << 49)
 #define TAG_FALSE     ((uint64_t)2 << 49)
 #define TAG_TRUE      ((uint64_t)3 << 49)
 #define TAG_UNDEF     ((uint64_t)4 << 49)
@@ -42,7 +42,7 @@ typedef uint64_t Value;
 #define MASK_TAG      ((uint64_t)7 << 49)
 
 // Singleton values.
-#define NULL_VAL      ((Value)(uint64_t)(QNAN | TAG_NULL))
+#define NIL_VAL      ((Value)(uint64_t)(QNAN | TAG_NIL))
 #define FALSE_VAL     ((Value)(uint64_t)(QNAN | TAG_FALSE))
 #define TRUE_VAL      ((Value)(uint64_t)(QNAN | TAG_TRUE))
 #define UNDEF_VAL     ((Value)(uint64_t)(QNAN | TAG_UNDEF))
@@ -52,7 +52,7 @@ typedef uint64_t Value;
 
 #define IS_FALSE(value)     ((value) == FALSE_VAL)
 #define IS_TRUE(value)      ((value) == TRUE_VAL)
-#define IS_NULL(value)      ((value) == NULL_VAL)
+#define IS_NULL(value)      ((value) == NIL_VAL)
 #define IS_UNDEF(value)     ((value) == UNDEFINED_VAL)
 #define IS_STR(value)       (((value)&(QNAN | MASK_TAG | SIGN_BIT)) == (QNAN | TAG_STR))
 
@@ -94,10 +94,13 @@ typedef struct sObjString{
 } ObjString;
 
 typedef struct sObjClass{
+    
 }ObjClass;
 typedef struct sObjClosure{
+    
 }ObjClosure;
 typedef struct sObjFiber{
+    
 }ObjFiber;
 typedef struct sObjFn{
 }ObjFn;
@@ -106,10 +109,13 @@ typedef struct sObjForeign{
 typedef struct sObjInstance{
 }ObjInstance;
 typedef struct sOjbList{
+    
 }ObjList;
 typedef struct sObjMap{
+    
 }ObjMap;
 typedef struct sObjModule{
+    
 }ObjModule;
 typedef struct sObjUpvalue{
 }ObjUpvalue;

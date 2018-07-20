@@ -100,6 +100,10 @@
 li_tokens
 #undef TOKEN
 
+#define TOKEN(token, token_content, num) const int TOKEN_##token##_LENGTH num ;
+li_tokens 
+#undef TOKEN
+
 //get li_tokens_type
 typedef enum {
 #define TOKEN(token, token_content, num) TOKEN_##token,
@@ -137,7 +141,6 @@ li_tokens
 #undef TOKEN
 #undef CVT_TOKEN_NAME
 };
-
 
 typedef struct{
     size_t start;
@@ -200,6 +203,189 @@ void lexerErrorWithHightlight(LexerState* lexer_state, ErrorType err, const char
     lexer_state->curToken.value = UNDEF_VAL;
     printWithHighlight(row, pos);
 }
+void skip(LexerState* lexer_state){
+    if(isSkip(cur_pt)){
+        if(cur_char == '\n'){
+            if(next_char == '\r')
+                cur_pt++;
+            lexer_state->curRow = cur_pt;
+            lexer_state->numRow++;
+            lexer_state->curToken.type = TOKEN_LINE;
+            lexer_state->curToken.value = UNDEF_VAL;
+            return;
+        }
+        if(cur_char == '\r'){
+            if(next_char == '\n')
+                cur_pt++;
+            lexer_state->curToken.type = TOKEN_LINE;
+            lexer_state->curToken.value = UNDEF_VAL;
+            return;
+        }
+        cur_pt++;
+    }
+}
+
+#define SET_LEXER_STATE_TOKEN(token) lexer_state->curToken.type = token
+#define SET_LEXER_STATE_VALUE(v)     lexer_state->curtoken.value = v
+#define INCREASE_LEXER_CUR_POINTET(token) lexer_state->cur += token##_LENGTH
+#define MAKE_REGULAR_TOKEN(token) SET_LEXER_STATE_TOKEN(token); SET_LEXER_STATE_VALUE(UNDEF_VAL); INCREASE_LEXER_CUR_POINTET(token)
+#define MAKE_TOKEN(token, v) SET_LEXER_STATE_TOKEN(token); SET_LEXER_STATE_VALUE(v); INCREASE_LEXER_CUR_POINTET(token)
+
+void readVar(lexerState* lexer_state){
+    if(!isCharOfName(cur_pt)){
+        lexerErrorWithHightlight(lexer_state, SyntaxError, "invalid var name");
+    }
+    
+}
+
+void readVarOrkeyword(LexerState* lexer_state){
+    switch(cur_char){
+        case '{':
+            MAKE_REGULAR_TOKEN(TOKEN_LEFT_BRACE);return;
+        case '}':
+            MAKE_REGULAR_TOKEN(TOKEN_RIGHT_BRACE);return;
+        case '[':
+            MAKE_REGULAR_TOKEN(TOKEN_LEFT_BRACKET);return;
+        case ']':
+            MAKE_REGULAR_TOKEN(TOKEN_RIGHT_BRACKET);return;
+        case '(':
+            MAKE_REGULAR_TOKEN(TOKEN_LEFT_PAREN);return;
+        case ')':
+            MAKE_REGULAR_TOKEN(TOKEN_RIGHT_PAREN);return;
+        case ':':
+            MAKE_REGULAR_TOKEN(TOKEN_COMMA);return;
+        case '.':
+            if(COMPARE_WITH_TOKEN_DOTDOTDOT(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_DOTDOTDOT);return;
+            }else if(COMPARE_WITH_TOKEN_DOTDOT(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_DOTDOT);return;
+            }else{
+                MAKE_REGULAR_TOKEN(TOKEN_DOT);return;
+            }
+            return;
+        case ',':
+            MAKE_REGULAR_TOKEN(TOKEN_COMMA);return;
+        case '*':
+            MAKE_REGULAR_TOKEN(TOKEN_STAR);return;
+        case '/':
+            MAKE_REGULAR_TOKEN(TOKEN_SLASH);return;
+        case '%':
+            MAKE_REGULAR_TOKEN(TOKEN_PERCETN);return;
+        case '\\':
+            MAKE_REGULAR_TOKEN(TOKEN_BACKSLASH);return;
+        case '+':
+            MAKE_REGULAR_TOKEN(TOKEN_PLUS);return;
+        case '-':
+            if(COMPARE_WITH_TOKEN_ARROR(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_ARROR);
+            }else{
+                MAKE_REGULAR_TOKEN(TOKEN_MINUS);
+            }
+            return;
+        case '>':
+            if(COMPARE_WITH_TOKEN_GTGT(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_GTGT);
+            }else if(COMPARE_WITH_TOKEN_GTEQ(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_GTEQ);
+            }else{
+                MAKE_REGULAR_TOKEN(TOKEN_GT);
+            }
+            return;
+        case '<':
+            if(COMPARE_WITH_TOKEN_LTLT(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_LTLT);
+            }else if(COMPARE_WITH_TOKEN_LTEQ(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_LTEQ);
+            }else{
+                MAKE_REGULAR_TOKEN(TOKEN_LT);
+            }
+            return;
+        case '!':
+            if(COMPARE_WITH_TOKEN_BANGEQ(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_BANGEQ);
+            }else{
+                MAKE_REGULAR_TOKEN(TOKEN_BANG);
+            }
+            return;
+        case '&':
+            if(COMPARE_WITH_TOKEN_AMPAMP(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_AMPAMP);
+            }else{
+                MAKE_REGULAR_TOKEN(TOKEN_AMP);
+            }
+            return;
+        case '|':
+            if(COMPARE_WITH_TOKEN_PIPEPIPE(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_PIPEPIPE);
+            }else{
+                MAKE_REGULAR_TOKEN(TOKEN_PIPE);
+            }
+            return;
+        case '~':
+            MAKE_REGULAR_TOKEN(TOKEN_TILDE);return;
+        case '?':
+            MAKE_REGULAR_TOKEN(TOKEN_QUESTION);return;
+        case 'b':
+            if(COMPARE_WITH_TOKEN_BREAK(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_BREAK);
+                return;
+            }
+        case 'c':
+            if(COMPARE_WITH_TOKEN_CONTINUE(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_CONTINUE);
+                return;
+            }
+        case 'i':
+            if(COMPARE_WITH_TOKEN_IF(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_IF);
+                return;
+            } else if(COMPARE_WITH_TOKEN_IMPORT(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_IMPORT);
+                return;
+            }
+        case 'e':
+            if(COMPARE_WITH_TOKEN_ELSE(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_ELSE);
+                return;
+            }
+        case 'f':
+            if(COMPARE_WITH_TOKEN_FALSE(cur_pt)){
+                MAKE_TOKEN(TOKEN_FALSE, FALSE_VAL);
+                return;
+            }else if(COMPARE_WITH_TOKEN_FOR(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_FOR);
+                return;
+            }
+        case 't':
+            if(COMPARE_WITH_TOKEN_TRUE(cur_pt)){
+                MAKE_TOKEN(TOKEN_TRUE, TRUE_VAL);
+                return;
+            }
+        case 'n':
+            if(COMPARE_WITH_TOKEN_NIL(cur_pt)){
+                MAKE_TOKEN(TOKEN_NIL, NIL_VAL);
+                return;
+            }
+        case 'r':
+            if(COMPARE_WITH_TOKEN_RETURN(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_RETURN);
+                return;
+            }
+        case 'v':
+            if(COMPARE_WITH_TOKEN_VAR(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_VAR);
+                return;
+            }
+        case 'w':
+            if(COMPARE_WITH_TOKEN_WHILE(cur_pt)){
+                MAKE_REGULAR_TOKEN(TOKEN_WHILE);
+                return;
+            }
+        default:
+            readVar(lexer_state);
+    }
+            
+}
 
 void readNum(LexerState* lexer_state){
     double v = 0;
@@ -213,7 +399,7 @@ void readNum(LexerState* lexer_state){
        value_bit.asDouble = v;
        lexer_state->curToken.type  = TOKEN_NUMBER;
        lexer_state->curToken.value = value_bit.asUint64;
-       if(isCharOfVarStart(cur_pt)){
+       if(isCharOfVar(cur_pt)){
           lexerErrorWithHightlight(lexer_state, SyntaxError, "must split a number");
           return;
        }
@@ -239,7 +425,7 @@ void readNum(LexerState* lexer_state){
         }
         while(isNum(cur_pt)) cur_pt++;
     }
-    if(isCharOfVarStart(cur_pt)){
+    if(isCharOfVar(cur_pt)){
         lexerErrorWithHightlight(lexer_state, SyntaxError, "must split a number");
         return;
     }
@@ -250,8 +436,11 @@ void readNum(LexerState* lexer_state){
     lexer_state->curToken.value = value_bit.asUint64;
 }
 
-
-
+void readString(LexerState* lexer_state){
+    
+}
+void readRawString(LexerState* lexer_state){
+}
 
 void test_li_ocmpiler(){
     LexerState lexer_state;
