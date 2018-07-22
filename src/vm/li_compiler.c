@@ -100,7 +100,7 @@
 li_tokens
 #undef TOKEN
 
-#define TOKEN(token, token_content, num) const int TOKEN_##token##_LENGTH num ;
+#define TOKEN(token, token_content, num) const int TOKEN_##token##_LENGTH = num ;
 li_tokens 
 #undef TOKEN
 
@@ -142,11 +142,6 @@ li_tokens
 #undef CVT_TOKEN_NAME
 };
 
-typedef struct{
-    size_t start;
-    size_t end;
-} StringSlice;
-
 typedef struct sToken{
     TokenType type;
     Value     value;
@@ -159,11 +154,8 @@ typedef struct sLexerState{
     size_t       numRow;
     size_t       numCol;
     Token        curToken;
-    StringSlice  stringSlice;
     Token        nextToken;
 }LexerState;
-
-
 
 
 #define cur_pt (lexer_state->cur)
@@ -175,15 +167,6 @@ void initLexerState(LexerState* lexer_state){
     lexer_state->src = "1234e-1";
     lexer_state->curRow = lexer_state->src;
     lexer_state->cur = lexer_state->src;
-}
-
-void printStringSlice(LexerState* lexer_state, StringSlice slice){
-    const char* p = lexer_state->src;
-    p += slice.start;
-    int n = slice.end-slice.start;
-    while(n--){
-        putchar(*(p++));
-    }
 }
 
 void lexerErrorWithHightlight(LexerState* lexer_state, ErrorType err, const char* info){
@@ -203,6 +186,7 @@ void lexerErrorWithHightlight(LexerState* lexer_state, ErrorType err, const char
     lexer_state->curToken.value = UNDEF_VAL;
     printWithHighlight(row, pos);
 }
+
 void skip(LexerState* lexer_state){
     if(isSkip(cur_pt)){
         if(cur_char == '\n'){
@@ -225,14 +209,22 @@ void skip(LexerState* lexer_state){
     }
 }
 
+void skipComment(LexerState* lexer_state){
+    if(cur_char == '/' && next_char == '/'){
+        while(cur_char != '\0' || cur_char != '\n')
+            cur_pt++;
+        skip(lexer_state);
+    }
+}
+
 #define SET_LEXER_STATE_TOKEN(token) lexer_state->curToken.type = token
-#define SET_LEXER_STATE_VALUE(v)     lexer_state->curtoken.value = v
+#define SET_LEXER_STATE_VALUE(v)     lexer_state->curToken.value = v
 #define INCREASE_LEXER_CUR_POINTET(token) lexer_state->cur += token##_LENGTH
 #define MAKE_REGULAR_TOKEN(token) SET_LEXER_STATE_TOKEN(token); SET_LEXER_STATE_VALUE(UNDEF_VAL); INCREASE_LEXER_CUR_POINTET(token)
 #define MAKE_TOKEN(token, v) SET_LEXER_STATE_TOKEN(token); SET_LEXER_STATE_VALUE(v); INCREASE_LEXER_CUR_POINTET(token)
 
-void readVar(lexerState* lexer_state){
-    if(!isCharOfName(cur_pt)){
+void readVar(LexerState* lexer_state){
+    if(!isCharOfVar(cur_pt)){
         lexerErrorWithHightlight(lexer_state, SyntaxError, "invalid var name");
     }
     
@@ -440,12 +432,12 @@ void readString(LexerState* lexer_state){
     
 }
 void readRawString(LexerState* lexer_state){
+    
 }
 
 void test_li_ocmpiler(){
     LexerState lexer_state;
     initLexerState(&lexer_state);
-    StringSlice slice = {3,5};
     readNum(&lexer_state);
     ValueBit bit;
     bit.asUint64 = lexer_state.curToken.value;

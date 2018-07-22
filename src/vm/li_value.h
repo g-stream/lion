@@ -85,7 +85,6 @@ typedef enum{
 } ValueType;
 
 
-#define CommonHeader ObjClass *next; bool isDark; ObjType type
 
 typedef struct sObjString{
     uint32_t length;
