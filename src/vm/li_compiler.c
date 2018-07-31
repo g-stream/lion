@@ -3,6 +3,7 @@
 #include "li_config.h"
 #include "li_vm.h"
 #include "li_value.h"
+#include "li_compiler.h"
 #include "stdlib.h"
 #include "li_debug.h"
 #include "li_util.h"

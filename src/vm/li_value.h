@@ -91,33 +91,49 @@ typedef struct sObjString{
     uint32_t hash;
     char* content;
 } ObjString;
+typedef struct sObjUpvalue{
+    bool   closed;
+    Value* value;
+    sturct sObjUpvalue* next;
+}ObjUpvalue;
+
+typedef struct sObjFn{
+    
+}ObjFn;
 
 typedef struct sObjClass{
+    sturct sObjClass super_class;
     
 }ObjClass;
+
 typedef struct sObjClosure{
     
 }ObjClosure;
+
 typedef struct sObjFiber{
     
 }ObjFiber;
-typedef struct sObjFn{
-}ObjFn;
+
 typedef struct sObjForeign{
+    
 }ObjForeign;
+
 typedef struct sObjInstance{
+    
 }ObjInstance;
+
 typedef struct sOjbList{
     
 }ObjList;
+
 typedef struct sObjMap{
     
 }ObjMap;
+
 typedef struct sObjModule{
     
 }ObjModule;
-typedef struct sObjUpvalue{
-}ObjUpvalue;
+
 
 
 
