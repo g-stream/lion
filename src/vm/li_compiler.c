@@ -442,6 +442,9 @@ void test_li_ocmpiler(){
     ValueBit bit;
     bit.asUint64 = lexer_state.curToken.value;
     printf("%f", bit.asDouble);
+    ObjFiber fb;
+    Value* a = liNew(&fb, Value);
+    
 }
 
 
@@ -451,7 +454,6 @@ void test_li_ocmpiler(){
  */
 
 typedef uint32_t instruction_t;
-#define cast(type, v) ((type) (v))
 /*
 ** size and position of opcode arguments.
 */

@@ -2,6 +2,7 @@
 #define li_debug_h
 #include <stdio.h>
 #include <assert.h>
+#include "li_config.h"
 /* 
  * define errors 
  */
@@ -17,4 +18,18 @@ li_errors
 #undef ERROR 
 void printWithHighlight(const char* str, size_t pos);
 void printError(ErrorType err_type, const char* info);
+
+#if LION_DEBUG
+#define ASSERT(condition, message)	do { \
+												if (!(condition)) { \
+													fprintf(stderr, "[%s:%d] Assert failed in %s(): %s\n", \
+													__FILE__, __LINE__, __func__, message); \
+													abort(); \
+												} \
+											} \
+											while(0)
+#else
+#define DEBUG_ASSERT(condition, message)
+#endif
+
 #endif

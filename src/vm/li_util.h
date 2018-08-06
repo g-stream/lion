@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <assert.h>
 #include <stdbool.h>
+
+#define cast(t, v) ((t*) (v))
+
 uint32_t hash_str(const char* s);
 
 //compiler help functions
