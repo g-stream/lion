@@ -1,6 +1,7 @@
 #include "li_value.h"
 #include "li_debug.h"
-void value2string(Value v){
+void printValue(Value v){
+    
     switch(v){
         case FALSE_VAL:
             printf("false\n");
@@ -16,7 +17,15 @@ void value2string(Value v){
             break;
         default:
             if(IS_NUM(v)){
-                printf("%f\n", (double)v);
+                ValueBit vb;
+                vb.value = v;
+                double intpart;
+                if(modf(vb.asDouble, &intpart) == 0){
+                    printf("%ld\n", (int64_t)intpart);
+                }
+                else{
+                    printf("%f\n", vb.asDouble);
+                }
             }else{
                 printf("haven't implemented\n");
             }
@@ -77,8 +86,8 @@ Value numMod(Value l, Value r){
     ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
     vb1.value = l;vb2.value = r;
-    uint64_t v1 = (uint64_t) vb1.asDouble;
-    uint64_t v2 = (uint64_t) vb2.asDouble;
+    int64_t v1 = (int64_t) vb1.asDouble;
+    int64_t v2 = (int64_t) vb2.asDouble;
     vb1.asDouble = (double) (v1%v2);
     return vb1.value;
 }
@@ -132,6 +141,21 @@ Value bitShiftR(Value l, Value r){
     return vb1.value;
 }
 
-Value boolAdd(Value l, Value r);
-Value boolOr(Value l, Value r);
-Value boolXor(Value l, Value r);
+Value boolAnd(Value l, Value r){
+    Value v1 = (IS_NULL(l) || IS_FALSE(l))?FALSE_VAL:TRUE_VAL;
+    Value v2 = (IS_NULL(r) || IS_FALSE(r))?FALSE_VAL:TRUE_VAL;
+    return (IS_TRUE(v1) && IS_TRUE(v2))?TRUE_VAL:FALSE_VAL;
+}
+Value boolOr(Value l, Value r){
+    Value v1 = (IS_NULL(l) || IS_FALSE(l))?FALSE_VAL:TRUE_VAL;
+    Value v2 = (IS_NULL(r) || IS_FALSE(r))?FALSE_VAL:TRUE_VAL;
+    return (IS_TRUE(v1) || IS_TRUE(v2))?TRUE_VAL:FALSE_VAL;
+}
+Value boolXor(Value l, Value r){
+    Value v1 = (IS_NULL(l) || IS_FALSE(l))?FALSE_VAL:TRUE_VAL;
+    Value v2 = (IS_NULL(r) || IS_FALSE(r))?FALSE_VAL:TRUE_VAL;
+    return (v1 != v2)?TRUE_VAL:FALSE_VAL;
+}
+
+
+

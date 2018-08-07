@@ -436,15 +436,21 @@ void readRawString(LexerState* lexer_state){
 }
 
 void test_li_ocmpiler(){
-    LexerState lexer_state;
-    initLexerState(&lexer_state);
-    readNum(&lexer_state);
-    ValueBit bit;
-    bit.asUint64 = lexer_state.curToken.value;
-    printf("%f", bit.asDouble);
-    ObjFiber fb;
-    Value* a = liNew(&fb, Value);
-    liFree(&fb, a);
+    ValueBit v1,v2,v3;
+    v1.asDouble = 123.3124;
+    v2.asDouble = 3.23421;
+    v3.value = numAdd(v1.value,v2.value);
+    printValue(v3.value);
+    v3.value = numMinus(v1.value,v2.value);
+    printValue(v3.value);
+    v3.value = numPow(v1.value,v2.value);
+    printValue(v3.value);
+    v3.value = numDiv(v1.value,v2.value);
+    printValue(v3.value);
+    v3.value = numIDiv(v1.value,v2.value);
+    printValue(v3.value);
+    v3.value = boolAnd(v1.value,v2.value);
+    printValue(v3.value);
 }
 
 

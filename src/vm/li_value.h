@@ -53,6 +53,7 @@ typedef uint64_t Value;
 
 #define IS_FALSE(value)     ((value) == FALSE_VAL)
 #define IS_TRUE(value)      ((value) == TRUE_VAL)
+#define IS_BOOLEAN(value)   (IS_FALSE(value) || IS_TRUE(value))
 #define IS_NULL(value)      ((value) == NIL_VAL)
 #define IS_UNDEF(value)     ((value) == UNDEFINED_VAL)
 #define IS_STR(value)       (((value)&(QNAN | MASK_TAG | SIGN_BIT)) == (QNAN | TAG_STR))
@@ -88,6 +89,8 @@ typedef enum{
     VAL_OBJ
 } ValueType;
 
+void printValue(Value v);
+
 Value numNeg(Value v);
 Value numAdd(Value l, Value r);
 Value numMinus(Value l, Value r);
@@ -104,7 +107,7 @@ Value bitXor(Value l, Value r);
 Value bitShiftL(Value l, Value r);
 Value bitShiftR(Value l, Value r);
 
-Value boolAdd(Value l, Value r);
+Value boolAnd(Value l, Value r);
 Value boolOr(Value l, Value r);
 Value boolXor(Value l, Value r);
 
