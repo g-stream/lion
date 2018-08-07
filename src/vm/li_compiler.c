@@ -3,7 +3,6 @@
 #include "li_config.h"
 #include "li_vm.h"
 #include "li_value.h"
-#include "li_compiler.h"
 #include "stdlib.h"
 #include "li_debug.h"
 #include "li_util.h"
@@ -437,12 +436,11 @@ void readRawString(LexerState* lexer_state){
 }
 
 void test_li_ocmpiler(){
-    LexerState lexer_state;
-    initLexerState(&lexer_state);
-    readNum(&lexer_state);
-    ValueBit bit;
-    bit.asUint64 = lexer_state.curToken.value;
-    printf("%f", bit.asDouble);
+    ValueBit v1,v2,v3;
+    v1.asDouble = 2342.3;
+    v2.asDouble = 34.2;
+    v3.value = numAdd(v1.value, v2.value);
+    printValue(v3.value);
 }
 
 
@@ -452,7 +450,6 @@ void test_li_ocmpiler(){
  */
 
 typedef uint32_t instruction_t;
-#define cast(type, v) ((type) (v))
 /*
 ** size and position of opcode arguments.
 */

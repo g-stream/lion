@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 #include <stdbool.h>
 typedef enum {
   OBJ_CLASS,
@@ -52,6 +53,7 @@ typedef uint64_t Value;
 
 #define IS_FALSE(value)     ((value) == FALSE_VAL)
 #define IS_TRUE(value)      ((value) == TRUE_VAL)
+#define IS_BOOLEAN(value)   (IS_FALSE(value) || IS_TRUE(value))
 #define IS_NULL(value)      ((value) == NIL_VAL)
 #define IS_UNDEF(value)     ((value) == UNDEFINED_VAL)
 #define IS_STR(value)       (((value)&(QNAN | MASK_TAG | SIGN_BIT)) == (QNAN | TAG_STR))
@@ -66,12 +68,15 @@ typedef uint64_t Value;
 #define AS_OBJ(value) ((Obj*)(uintptr_t)((value) & ~(SIGN_BIT | QNAN)))
 #define AS_STR_INDEX(value) ((uint32_t)((value) & ~(SIGN_BIT|QNAN|MASK_TAG)))
 
+
+
 typedef union {
     Value    value;
     double   asDouble;
     uint64_t asUint64;
-    uint32_t as2Uint32;
+    uint32_t as2Uint32[2];
 } ValueBit;
+
 
 
 typedef enum{
@@ -84,17 +89,48 @@ typedef enum{
     VAL_OBJ
 } ValueType;
 
+void printValue(Value v);
 
+Value numNeg(Value v);
+Value numAdd(Value l, Value r);
+Value numMinus(Value l, Value r);
+Value numMulply(Value l, Value r);
+Value numDiv(Value l, Value r);
+Value numPow(Value l, Value r);
+Value numIDiv(Value l, Value r);
+Value numMod(Value l, Value r);
+
+Value bitNeg(Value v);
+Value bitAnd(Value l, Value r);
+Value bitOr(Value l, Value r);
+Value bitXor(Value l, Value r);
+Value bitShiftL(Value l, Value r);
+Value bitShiftR(Value l, Value r);
+
+Value boolAnd(Value l, Value r);
+Value boolOr(Value l, Value r);
+Value boolXor(Value l, Value r);
+
+
+
+typedef struct sCallInfo {
+    
+} CallInfo;
+
+typedef struct sLionVm {
+    CallInfo* callinfo;
+} LionVm;
 
 typedef struct sObjString{
     uint32_t length;
     uint32_t hash;
     char* content;
 } ObjString;
+
 typedef struct sObjUpvalue{
     bool   closed;
     Value* value;
-    sturct sObjUpvalue* next;
+    struct sObjUpvalue* next;
 }ObjUpvalue;
 
 typedef struct sObjFn{
@@ -102,7 +138,7 @@ typedef struct sObjFn{
 }ObjFn;
 
 typedef struct sObjClass{
-    sturct sObjClass super_class;
+    struct sObjClass* super_class;
     
 }ObjClass;
 
@@ -123,6 +159,7 @@ typedef struct sObjInstance{
 }ObjInstance;
 
 typedef struct sOjbList{
+    size_t n;
     
 }ObjList;
 
@@ -133,6 +170,7 @@ typedef struct sObjMap{
 typedef struct sObjModule{
     
 }ObjModule;
+
 
 
 

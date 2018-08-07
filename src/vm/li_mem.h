@@ -2,14 +2,13 @@
 #define li_men_h
 #include <stdlib.h>
 #include "li_value.h"
-#include "li_config.h"
-#include "li_vm.h"
+#include "li_util.h"
 
+#define liMalloc(fiber, size) liM_realloc_(fiber, NULL, 0, (size))
+#define liFree(fiber, block) liM_realloc_(fiber, block, sizeof(*(block)), 0)
+#define liNew(fiber, type) cast(type, liMalloc(fiber, sizeof(type)))
 
-void liRealloc();
+void* liM_realloc_(ObjFiber *fiber, void *block, size_t osize, size_t nsize);
 
-void li_mem_alloc();
-void li_mem_free();
-void li_mem_realloc();
 
 #endif
