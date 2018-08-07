@@ -5,7 +5,7 @@ void* liM_realloc_(ObjFiber *fiber, void *block, size_t osize, size_t nsize) {
     size_t realosize = (block) ? osize : 0;
     ASSERT((realosize == 0) == (block == NULL), "no empty pointer must have size or empty pointer must not have size");
     if(nsize == 0){
-        ASSERT(!block, "if new size is not zero, pointer must not been empty");
+        ASSERT(block, "if new size is not zero, pointer must not been empty");
         free(block);
         return NULL;
     }

@@ -444,7 +444,7 @@ void test_li_ocmpiler(){
     printf("%f", bit.asDouble);
     ObjFiber fb;
     Value* a = liNew(&fb, Value);
-    
+    liFree(&fb, a);
 }
 
 
