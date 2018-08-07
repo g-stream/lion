@@ -1,6 +1,5 @@
 #include "li_value.h"
 #include "li_debug.h"
-#include "math.h"
 void value2string(Value v){
     switch(v){
         case FALSE_VAL:
@@ -70,7 +69,7 @@ Value numIDiv(Value l, Value r){
     ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
     vb1.value = l;vb2.value = r;
-    vb1.asDouble += vb2.asDouble;
+    vb1.asDouble /= vb2.asDouble;
     modf(vb1.asDouble, &vb1.asDouble);
     return vb1.value;
 }
@@ -80,14 +79,14 @@ Value numMod(Value l, Value r){
     vb1.value = l;vb2.value = r;
     uint64_t v1 = (uint64_t) vb1.asDouble;
     uint64_t v2 = (uint64_t) vb2.asDouble;
-    vb1.asDouble = (double) v1%v2;
+    vb1.asDouble = (double) (v1%v2);
     return vb1.value;
 }
 
 Value bitNeg(Value v){
     ValueBit vb;
-    ASSERT(IS_NUM(v) && modf(vb.asDouble, &vb.asDouble) == 0 , "should be passed an interger number value");
     vb.value = v;
+    ASSERT(IS_NUM(v) && modf(vb.asDouble, &vb.asDouble) == 0 , "should be passed an interger number value");
     uint64_t tmp = (uint64_t) vb.asDouble;
     vb.asDouble = (double) (~ tmp);
     return vb.value;
@@ -133,6 +132,6 @@ Value bitShiftR(Value l, Value r){
     return vb1.value;
 }
 
-Value boolAdd(Value l, Value r)
+Value boolAdd(Value l, Value r);
 Value boolOr(Value l, Value r);
 Value boolXor(Value l, Value r);

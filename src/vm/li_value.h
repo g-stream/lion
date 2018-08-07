@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 #include <stdbool.h>
 typedef enum {
   OBJ_CLASS,
@@ -66,12 +67,15 @@ typedef uint64_t Value;
 #define AS_OBJ(value) ((Obj*)(uintptr_t)((value) & ~(SIGN_BIT | QNAN)))
 #define AS_STR_INDEX(value) ((uint32_t)((value) & ~(SIGN_BIT|QNAN|MASK_TAG)))
 
+
+
 typedef union {
     Value    value;
     double   asDouble;
     uint64_t asUint64;
-    uint32_t as2Uint32;
+    uint32_t as2Uint32[2];
 } ValueBit;
+
 
 
 typedef enum{
@@ -83,6 +87,26 @@ typedef enum{
     VAL_UNDEF,
     VAL_OBJ
 } ValueType;
+
+Value numNeg(Value v);
+Value numAdd(Value l, Value r);
+Value numMinus(Value l, Value r);
+Value numMulply(Value l, Value r);
+Value numDiv(Value l, Value r);
+Value numPow(Value l, Value r);
+Value numIDiv(Value l, Value r);
+Value numMod(Value l, Value r);
+
+Value bitNeg(Value v);
+Value bitAnd(Value l, Value r);
+Value bitOr(Value l, Value r);
+Value bitXor(Value l, Value r);
+Value bitShiftL(Value l, Value r);
+Value bitShiftR(Value l, Value r);
+
+Value boolAdd(Value l, Value r);
+Value boolOr(Value l, Value r);
+Value boolXor(Value l, Value r);
 
 
 typedef struct sCallInfo {

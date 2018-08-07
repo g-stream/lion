@@ -2,6 +2,7 @@
 #define li_debug_h
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
 #include "li_config.h"
 /* 
  * define errors 
