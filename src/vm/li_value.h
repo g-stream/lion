@@ -22,6 +22,7 @@ typedef enum {
 typedef uint64_t Value;
 #define SIGN_BIT ((uint64_t)1 << 63)
 #define QNAN ((uint64_t)0X7ff0000000000000)
+#define OBJPOINTER_MASK  ((((uint64_t)1)<<48) -1)
 
 // Tag values for the different singleton values.
 /*
@@ -30,17 +31,23 @@ typedef uint64_t Value;
  * Use the three bits before the bits setted for nan to reperesent singleton value types below
  * If the top most bit is setted, the value is a class, the lowest 32 bit is used to reperesent the pointer to the value
  */
-#define TAG_NAN       ((uint64_t)0 << 49)
-#define TAG_NIL       ((uint64_t)1 << 49)
-#define TAG_FALSE     ((uint64_t)2 << 49)
-#define TAG_TRUE      ((uint64_t)3 << 49)
-#define TAG_UNDEF     ((uint64_t)4 << 49)
-#define TAG_STR       ((uint64_t)5 << 49)
-#define TAG_UNUSED3   ((uint64_t)6 << 49)
-#define TAG_UNUSED4   ((uint64_t)7 << 49)
+#define TAG_NAN         ((uint64_t)0 << 48)
+#define TAG_NIL         ((uint64_t)1 << 48)
+#define TAG_FALSE       ((uint64_t)2 << 48)
+#define TAG_TRUE        ((uint64_t)3 << 48)
+#define TAG_UNDEF       ((uint64_t)4 << 48)
+#define TAG_STRING      ((uint64_t)5 << 48)
+#define TAG_CLASS       ((uint64_t)6 << 48)
+#define TAG_CLOSURE     ((uint64_t)7 << 48)
+#define TAG_FIBER       ((uint64_t)8 << 48)
+#define TAG_FN          ((uint64_t)9 << 48)
+#define TAG_FOREIGH     ((uint64_t)10 << 48)
+#define TAG_INSTANCE    ((uint64_t)11 << 48)
+#define TAG_LIST        ((uint64_t)12 << 48)
+#define TAG_MAP         ((uint64_t)13 << 48)
 
 // Masks out the tag bits used to identify the singleton value.
-#define MASK_TAG      ((uint64_t)7 << 49)
+#define MASK_TAG      ((uint64_t)15 << 48)
 
 // Singleton values.
 #define NIL_VAL      ((Value)(uint64_t)(QNAN | TAG_NIL))
@@ -117,9 +124,7 @@ typedef struct sCallInfo {
     
 } CallInfo;
 
-typedef struct sLionVm {
-    CallInfo* callinfo;
-} LionVm;
+
 
 typedef struct sObjString{
     uint32_t length;
@@ -175,4 +180,74 @@ typedef struct sObjModule{
 
 
 
+typedef struct sLionVm {
+    
+    CallInfo* callinfo;
+    ObjFiber* fiber;
+} LionVm;
+
+LionVm* newVm();
+
+Value newString(LionVm* vm, const char* cstring);
+Value stringLength(LionVm* vm, ObjString* string);
+Value stringSub(LionVm* vm, ObjString* string, size_t start, size_t end);
+
+Value newUpvalue(LionVm* vm);
+
+
+
+Value newClass(LionVm* vm);
+Value classBindSuper(LionVm* vm, ObjClass* class, ObjClass* super_class);
+
+Value newList(LionVm* vm);
+Value listInsert(LionVm* vm, ObjList* list, Value value);
+Value listRemove(LionVm* vm, ObjList* list, Value index);
+Value listSize(LionVm* vm, ObjList* list);
+
+Value newMap(LionVm* vm);
+Value mapInsert(LionVm* vm, ObjMap* map, Value key, Value value);
+Value mapRemove(LionVm* vm, ObjMap* map, Value key);
+Value mapSize(LionVm* vm, ObjMap* map);
+
+Value newModule(LionVm* vm);
+
+static inline Value objectToValueOfTag(void* objptr, uint64_t tag){
+    ValueBit vb;
+    vb.asUint64 = (intptr_t) objptr;
+    vb.asUint64 &= OBJPOINTER_MASK;
+    vb.asUint64 |= (tag | QNAN | SIGN_BIT);
+    return vb.value;
+}
+static inline Value numToValue(double num){
+    ValueBit vb;
+    vb.asDouble = num;
+    return vb.value;
+}
+
+static inline double valueToNum(Value value){
+    ValueBit vb;
+    vb.value = value;
+    return vb.asDouble;
+}
+
+#define objStringToValue(obj)       objectToValueOfTag(obj, TAG_STRING)
+#define objClassToValue(obj)        objectToValueOfTag(obj, TAG_CLASS)
+#define objClosureToValue(obj)      objectToValueOfTag(obj, TAG_CLOSURE)
+#define objFiberToValue(obj)        objectToValueOfTag(obj, TAG_FIBER)
+#define objFnToValue(obj)           objectToValueOfTag(obj, TAG_FN)
+#define objForeignToValue(obj)      objectToValueOfTag(obj, TAG_FOREIGH)
+#define objInstanceToValue(obj)     objectToValueOfTag(obj, TAG_INSTANCE)
+#define objListToValue(obj)         objectToValueOfTag(obj, TAG_LIST)
+#define objMapToValue(obj)          objectToValueOfTag(obj, TAG_MAP)
+
+#define valueToObj(value) (intptr_t) (value & OBJPOINTER_MASK)
+
+#define valueToString(value)    cast(ObjString, valueToObj(value))
+#define valueToClass(value)     cast(ObjClass,  valueToObj(value))
+#define valueToClosure(value)   cast(ObjClosure,  valueToObj(value))
+#define valueToFiber(value)     cast(ObjFiber,  valueToObj(value))
+#define valueToForeign(value)   cast(ObjForeign,  valueToObj(value))
+#define valueToInstance(value)  cast(ObjInstance,  valueToObj(value))
+#define valueToList(value)      cast(ObjList,  valueToObj(value))
+#define valueToMap(value)       cast(ObjMap,  valueToObj(value))
 #endif

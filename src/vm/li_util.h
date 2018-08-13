@@ -3,10 +3,11 @@
 #include <stdint.h>
 #include <assert.h>
 #include <stdbool.h>
+#include "li_value.h"
 
 #define cast(t, v) ((t*) (v))
 
-uint32_t hash_str(const char* s);
+uint32_t hashString(const char* s);
 
 //compiler help functions
 bool isAlphbeta(const char* c);

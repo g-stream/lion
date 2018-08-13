@@ -4,7 +4,7 @@
 #define HASH_VAL_B 76963 /* another prime */
 #define HASH_VAL_C 86969 /* yet another prime */
 #define HASH_VAL_FIRSTH 37 /* also prime */
-unsigned hash_str(const char* s)
+unsigned hashString(const char* s)
 {
    unsigned h = HASH_VAL_FIRSTH;
    while (*s) {

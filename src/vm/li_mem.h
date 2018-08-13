@@ -6,7 +6,8 @@
 
 #define liMalloc(fiber, size) liM_realloc_(fiber, NULL, 0, (size))
 #define liFree(fiber, block) liM_realloc_(fiber, block, sizeof(*(block)), 0)
-#define liNew(fiber, type) cast(type, liMalloc(fiber, sizeof(type)))
+#define liNewValueOfType(fiber, type) cast(type, liMalloc(fiber, sizeof(type)))
+#define liNewArrayOfType(fiber, type, size) cast(type, liMalloc(fiber, size*sizeof(type)))
 
 void* liM_realloc_(ObjFiber *fiber, void *block, size_t osize, size_t nsize);
 
