@@ -4,12 +4,12 @@
 #include "li_value.h"
 #include "li_util.h"
 
-#define liMalloc(fiber, size) liM_realloc_(fiber, NULL, 0, (size))
-#define liFree(fiber, block) liM_realloc_(fiber, block, sizeof(*(block)), 0)
-#define liNewValueOfType(fiber, type) cast(type, liMalloc(fiber, sizeof(type)))
-#define liNewArrayOfType(fiber, type, size) cast(type, liMalloc(fiber, size*sizeof(type)))
+#define liMalloc(vm, size) liM_realloc_(vm, NULL, 0, (size))
+#define liFree(vm, block) liM_realloc_(vm, block, sizeof(*(block)), 0)
+#define liNewValueOfType(vm, type) cast(type, liMalloc(vm, sizeof(type)))
+#define liNewArrayOfType(vm, type, size) cast(type, liMalloc(vm, size*sizeof(type)))
 
-void* liM_realloc_(ObjFiber *fiber, void *block, size_t osize, size_t nsize);
+void* liM_realloc_(LionVm *vm, void *block, size_t osize, size_t nsize);
 
 
 #endif

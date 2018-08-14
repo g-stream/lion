@@ -37,65 +37,41 @@ void printValue(Value v){
 }
 
 Value numNeg(Value v){
-    ValueBit vb;
     ASSERT(IS_NUM(v), "should be passed a number value");
-    vb.value = v;
-    vb.asDouble = - vb.asDouble;
-    return vb.value;
+    return numToValue(- valueToNum(v));
 }
 Value numAdd(Value l, Value r){
-    ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
-    vb1.value = l;vb2.value = r;
-    vb1.asDouble += vb2.asDouble;
-    return vb1.value;
+    return numToValue(valueToNum(l) + valueToNum(r));
 }
 Value numMinus(Value l, Value r){
-    ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
-    vb1.value = l;vb2.value = r;
-    vb1.asDouble -= vb2.asDouble;
-    return vb1.value;
+    return numToValue(valueToNum(l) - valueToNum(r));
 }
 Value numMulply(Value l, Value r){
-    ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
-    vb1.value = l;vb2.value = r;
-    vb1.asDouble *= vb2.asDouble;
-    return vb1.value;
+    return numToValue(valueToNum(l) * valueToNum(r));
 }
 Value numDiv(Value l, Value r){
-    ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
-    vb1.value = l;vb2.value = r;
-    vb1.asDouble /= vb2.asDouble;
-    return vb1.value;
+    return numToValue(valueToNum(l) / valueToNum(r));
 }
 Value numPow(Value l, Value r){
-    ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
-    vb1.value = l;vb2.value = r;
-    vb1.asDouble = pow(vb1.asDouble, vb2.asDouble);
-    return vb1.value;
+    return numToValue(pow(valueToNum(l), valueToNum(r)));
 }
 Value numIDiv(Value l, Value r){
-    ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
-    vb1.value = l;vb2.value = r;
-    vb1.asDouble /= vb2.asDouble;
-    modf(vb1.asDouble, &vb1.asDouble);
-    return vb1.value;
+    double res;
+    modf(valueToNum(l) / valueToNum(r), &res);
+    return numToValue(res);
 }
 Value numMod(Value l, Value r){
-    ValueBit vb1, vb2;
     ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed a number value");
-    vb1.value = l;vb2.value = r;
-    int64_t v1 = (int64_t) vb1.asDouble;
-    int64_t v2 = (int64_t) vb2.asDouble;
-    vb1.asDouble = (double) (v1%v2);
-    return vb1.value;
+    int64_t v1 = (int64_t) valueToNum(l);
+    int64_t v2 = (int64_t) valueToNum(r);
+    return numToValue((double) (v1%v2));
 }
-
 Value bitNeg(Value v){
     ValueBit vb;
     vb.value = v;
@@ -106,7 +82,8 @@ Value bitNeg(Value v){
 }
 Value bitAnd(Value l, Value r){
     ValueBit vb1, vb2;
-    ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed an interger number value");
+    vb1.value = l, vb2.value = r;
+    ASSERT(IS_NUM(l) && IS_NUM(r) && modf(vb1.asDouble, &vb1.asDouble) == 0  && modf(vb2.asDouble, &vb2.asDouble) == 0 , "should be passed an interger number value");
     vb1.value = l;vb2.value = r;
     uint64_t v1 = (uint64_t) vb1.asDouble, v2 = (uint64_t) vb2.asDouble;
     vb1.asDouble = (double)(v1 & v2);
@@ -114,7 +91,8 @@ Value bitAnd(Value l, Value r){
 }
 Value bitOr(Value l, Value r){
     ValueBit vb1, vb2;
-    ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed an interger number value");
+    vb1.value = l, vb2.value = r;
+    ASSERT(IS_NUM(l) && IS_NUM(r) && modf(vb1.asDouble, &vb1.asDouble) == 0  && modf(vb2.asDouble, &vb2.asDouble) == 0 , "should be passed an interger number value");
     vb1.value = l;vb2.value = r;
     uint64_t v1 = (uint64_t) vb1.asDouble, v2 = (uint64_t) vb2.asDouble;
     vb1.asDouble = (double)(v1 | v2);
@@ -122,7 +100,8 @@ Value bitOr(Value l, Value r){
 }
 Value bitXor(Value l, Value r){
     ValueBit vb1, vb2;
-    ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed an interger number value");
+    vb1.value = l, vb2.value = r;
+    ASSERT(IS_NUM(l) && IS_NUM(r) && modf(vb1.asDouble, &vb1.asDouble) == 0  && modf(vb2.asDouble, &vb2.asDouble) == 0 , "should be passed an interger number value");
     vb1.value = l;vb2.value = r;
     uint64_t v1 = (uint64_t) vb1.asDouble, v2 = (uint64_t) vb2.asDouble;
     vb1.asDouble = (double)(v1 ^ v2);
@@ -130,15 +109,15 @@ Value bitXor(Value l, Value r){
 }
 Value bitShiftL(Value l, Value r){
     ValueBit vb1, vb2;
-    ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed an interger number value");
-    vb1.value = l;vb2.value = r;
-    uint64_t v1 = (uint64_t) vb1.asDouble, v2 = (uint64_t) vb2.asDouble;
-    vb1.asDouble = (double)(v1 << v2);
-    return vb1.value;
+    vb1.value = l, vb2.value = r;
+    ASSERT(IS_NUM(l) && IS_NUM(r) && modf(vb1.asDouble, &vb1.asDouble) == 0  && modf(vb2.asDouble, &vb2.asDouble) == 0 , "should be passed an interger number value");
+    uint64_t v1 = (uint64_t) valueToNum(l), v2 = (uint64_t) valueToNum(r);
+    return numToValue((double)(v1 << v2));
 }
 Value bitShiftR(Value l, Value r){
     ValueBit vb1, vb2;
-    ASSERT(IS_NUM(l) && IS_NUM(r), "should be passed an interger number value");
+    vb1.value = l, vb2.value = r;
+    ASSERT(IS_NUM(l) && IS_NUM(r) && modf(vb1.asDouble, &vb1.asDouble) == 0  && modf(vb2.asDouble, &vb2.asDouble) == 0 , "should be passed an interger number value");
     vb1.value = l;vb2.value = r;
     uint64_t v1 = (uint64_t) vb1.asDouble, v2 = (uint64_t) vb2.asDouble;
     vb1.asDouble = (double)(v1 >> v2);
@@ -162,16 +141,18 @@ Value boolXor(Value l, Value r){
 }
 
 ObjString* stringWithLength(LionVm* vm, size_t len){
-    ObjString* str = liNewValueOfType(vm->fiber, ObjString);
-    str->content = liNewArrayOfType(vm->fiber, char, len);
+    ObjString* str = liNewValueOfType(vm, ObjString);
+    str->content = liNewArrayOfType(vm, char, len+1);
     return str;
 }
 
 Value newString(LionVm* vm, const char* cstring){
     ObjString* str;
     if(cstring){
-        str = stringWithLength(vm, strlen(cstring));
-        memcpy(str->content, cstring, str->length);
+        size_t length = strlen(cstring);
+        str = stringWithLength(vm, length);
+        str->length = length;
+        memcpy(str->content, cstring, length);
         str->content[str->length] = '\0';
         str->hash = hashString(str->content);
     }
@@ -194,9 +175,11 @@ Value stringSub(LionVm* vm, ObjString* string, size_t start, size_t end){
     memcpy(str->content, string->content, len);
     return objStringToValue(str);
 }
+void  printString(Value v){
+    printf("%s\n", valueToString(v)->content);
+}
+
 Value newUpvalue(LionVm* vm);
-
-
 
 Value newClass(LionVm* vm);
 Value classBindSuper(LionVm* vm, ObjClass* class, ObjClass* super_class);
@@ -210,4 +193,11 @@ Value newMap(LionVm* vm);
 Value mapInsert(LionVm* vm, ObjMap* map, Value key, Value value);
 Value mapRemove(LionVm* vm, ObjMap* map, Value key);
 Value mapSize(LionVm* vm, ObjMap* map);
+
+
+LionVm* newVm(){
+    LionVm* vm = (LionVm*) malloc(sizeof(LionVm));
+    
+    return vm;
+}
 

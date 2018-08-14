@@ -5,6 +5,8 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+#include "li_util.h"
+
 typedef enum {
   OBJ_CLASS,
   OBJ_CLOSURE,
@@ -18,7 +20,7 @@ typedef enum {
   OBJ_UPVALUE
 } ObjType;
 
-
+typedef uint32_t instruction_t;
 typedef uint64_t Value;
 #define SIGN_BIT ((uint64_t)1 << 63)
 #define QNAN ((uint64_t)0X7ff0000000000000)
@@ -39,7 +41,7 @@ typedef uint64_t Value;
 #define TAG_STRING      ((uint64_t)5 << 48)
 #define TAG_CLASS       ((uint64_t)6 << 48)
 #define TAG_CLOSURE     ((uint64_t)7 << 48)
-#define TAG_FIBER       ((uint64_t)8 << 48)
+#define TAG_       ((uint64_t)8 << 48)
 #define TAG_FN          ((uint64_t)9 << 48)
 #define TAG_FOREIGH     ((uint64_t)10 << 48)
 #define TAG_INSTANCE    ((uint64_t)11 << 48)
@@ -120,10 +122,6 @@ Value boolXor(Value l, Value r);
 
 
 
-typedef struct sCallInfo {
-    
-} CallInfo;
-
 
 
 typedef struct sObjString{
@@ -142,17 +140,38 @@ typedef struct sObjFn{
     
 }ObjFn;
 
-typedef struct sObjClass{
-    struct sObjClass* super_class;
+typedef struct sObjClass
+{
+    struct sObjClass* superclass;
+    size_t numFields;
     
-}ObjClass;
+    
+    ObjString* name;
+} ObjClass;
 
-typedef struct sObjClosure{
-    
-}ObjClosure;
+typedef struct sObjClosure
+{
+    ObjFn* fn;
+    ObjUpvalue* upvalues;
+} ObjClosure;
+
+typedef struct sCallFrame {
+    instruction_t* ip;
+    ObjClosure* closure;
+    Value* stack_start;
+} CallFrame;
 
 typedef struct sObjFiber{
-    
+    Value* stack;
+    Value* stack_top;
+    size_t stack_capacity;
+    CallFrame* frames;
+    // The number of frames currently in use in [frames].
+    size_t num_frames;
+    size_t frame_capacity;
+    ObjUpvalue* open_upvalues;
+    struct sObjFiber* caller;
+    Value error;
 }ObjFiber;
 
 typedef struct sObjForeign{
@@ -179,11 +198,28 @@ typedef struct sObjModule{
 
 
 
-
 typedef struct sLionVm {
     
-    CallInfo* callinfo;
+    ObjClass* bool_class;
+    ObjClass* class_class;
+    ObjClass* fiber_class;
+    ObjClass* fn_class;
+    ObjClass* list_class;
+    ObjClass* map_class;
+    ObjClass* null_class;
+    ObjClass* num_class;
+    ObjClass* object_class;
+    ObjClass* range_class;
+    ObjClass* string_class;
+
     ObjFiber* fiber;
+
+
+    ObjMap* modules;
+    
+    size_t bytes_allocated;
+
+    SymbolTable methodNames;
 } LionVm;
 
 LionVm* newVm();
@@ -191,6 +227,7 @@ LionVm* newVm();
 Value newString(LionVm* vm, const char* cstring);
 Value stringLength(LionVm* vm, ObjString* string);
 Value stringSub(LionVm* vm, ObjString* string, size_t start, size_t end);
+void  printString(Value v);
 
 Value newUpvalue(LionVm* vm);
 
@@ -250,4 +287,6 @@ static inline double valueToNum(Value value){
 #define valueToInstance(value)  cast(ObjInstance,  valueToObj(value))
 #define valueToList(value)      cast(ObjList,  valueToObj(value))
 #define valueToMap(value)       cast(ObjMap,  valueToObj(value))
+
+
 #endif

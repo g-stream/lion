@@ -436,11 +436,10 @@ void readRawString(LexerState* lexer_state){
 }
 
 void test_li_ocmpiler(){
-    ValueBit v1,v2,v3;
-    v1.asDouble = 2342.3;
-    v2.asDouble = 34.2;
-    v3.value = numAdd(v1.value, v2.value);
-    printValue(v3.value);
+    LionVm vm;
+    const char* cstr = "asdf";
+    Value str = newString(&vm, cstr);
+    printString(str);
 }
 
 
@@ -449,7 +448,7 @@ void test_li_ocmpiler(){
  * OPCODE operator
  */
 
-typedef uint32_t instruction_t;
+
 /*
 ** size and position of opcode arguments.
 */

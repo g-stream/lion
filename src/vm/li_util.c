@@ -1,5 +1,6 @@
 #include "li_util.h"
-
+#include "li_value.h"
+#include "li_mem.h"
 #define HASH_VAL_A 54059 /* a prime */
 #define HASH_VAL_B 76963 /* another prime */
 #define HASH_VAL_C 86969 /* yet another prime */
@@ -71,4 +72,66 @@ bool isOneOfChars(const char* c, const char* pt){
 
 bool isSkip(const char* c){
     return isOneOfChars(c, " \n\r\t");
+}
+
+DEFINE_BUFFER(Byte, uint8_t);
+DEFINE_BUFFER(Int, int);
+DEFINE_BUFFER(String, ObjString*);
+
+void liSymbolTableInit(SymbolTable* symbols)
+{
+    liStringBufferInit(symbols);
+}
+
+void liSymbolTableClear(LionVm* vm, SymbolTable* symbols)
+{
+    liStringBufferClear(vm, symbols);
+}
+
+int liSymbolTableAdd(LionVm* vm, SymbolTable* symbols,
+                       const char* name, size_t length)
+{
+  ObjString* symbol = valueToString(newString(vm, name));
+  
+  liStringBufferWrite(vm, symbols, symbol);
+  
+  return symbols->count - 1;
+}
+
+int liSymbolTableEnsure(LionVm* vm, SymbolTable* symbols,
+                          const char* name, size_t length)
+{
+  // See if the symbol is already defined.
+  int existing = liSymbolTableFind(symbols, name, length);
+  if (existing != -1) return existing;
+
+  // New symbol, so add it.
+  return liSymbolTableAdd(vm, symbols, name, length);
+}
+
+int liSymbolTableFind(const SymbolTable* symbols,
+                        const char* name, size_t length)
+{
+  // See if the symbol is already defined.
+  // TODO: O(n). Do something better.
+  for (int i = 0; i < symbols->count; i++)
+  {
+    if (strcpy(symbols->data[i]->content, name) == 0) return i;
+  }
+  return -1;
+}
+
+
+// From: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2Float
+int liPowerOf2Ceil(int n)
+{
+  n--;
+  n |= n >> 1;
+  n |= n >> 2;
+  n |= n >> 4;
+  n |= n >> 8;
+  n |= n >> 16;
+  n++;
+  
+  return n;
 }
