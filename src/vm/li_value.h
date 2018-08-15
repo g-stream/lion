@@ -6,7 +6,6 @@
 #include <math.h>
 #include <stdbool.h>
 #include "li_util.h"
-
 typedef enum {
   OBJ_CLASS,
   OBJ_CLOSURE,
@@ -22,6 +21,7 @@ typedef enum {
 
 typedef uint32_t instruction_t;
 typedef uint64_t Value;
+typedef Value* stkid_t;
 #define SIGN_BIT ((uint64_t)1 << 63)
 #define QNAN ((uint64_t)0X7ff0000000000000)
 #define OBJPOINTER_MASK  ((((uint64_t)1)<<48) -1)
@@ -100,25 +100,25 @@ typedef enum{
 
 void printValue(Value v);
 
-Value numNeg(Value v);
-Value numAdd(Value l, Value r);
-Value numMinus(Value l, Value r);
-Value numMulply(Value l, Value r);
-Value numDiv(Value l, Value r);
-Value numPow(Value l, Value r);
-Value numIDiv(Value l, Value r);
-Value numMod(Value l, Value r);
+Value liNumNeg(Value v);
+Value liNumAdd(Value l, Value r);
+Value liNumMinus(Value l, Value r);
+Value liNumMulply(Value l, Value r);
+Value liNumDiv(Value l, Value r);
+Value liNumPow(Value l, Value r);
+Value liNumIDiv(Value l, Value r);
+Value liNumMod(Value l, Value r);
 
-Value bitNeg(Value v);
-Value bitAnd(Value l, Value r);
-Value bitOr(Value l, Value r);
-Value bitXor(Value l, Value r);
-Value bitShiftL(Value l, Value r);
-Value bitShiftR(Value l, Value r);
+Value liBitNeg(Value v);
+Value liBitAnd(Value l, Value r);
+Value liBitOr(Value l, Value r);
+Value liBitXor(Value l, Value r);
+Value liBitShiftL(Value l, Value r);
+Value liBitShiftR(Value l, Value r);
 
-Value boolAnd(Value l, Value r);
-Value boolOr(Value l, Value r);
-Value boolXor(Value l, Value r);
+Value liBoolAnd(Value l, Value r);
+Value liBoolOr(Value l, Value r);
+Value liBoolXor(Value l, Value r);
 
 
 
@@ -137,7 +137,9 @@ typedef struct sObjUpvalue{
 }ObjUpvalue;
 
 typedef struct sObjFn{
-    
+    int num_args;
+    instruction_t* code;
+    size_t num_code;
 }ObjFn;
 
 typedef struct sObjClass
@@ -165,7 +167,8 @@ typedef struct sObjFiber{
     Value* stack;
     Value* stack_top;
     size_t stack_capacity;
-    CallFrame* frames;
+    CallFrame* frame;
+    CallFrame* base_frame;
     // The number of frames currently in use in [frames].
     size_t num_frames;
     size_t frame_capacity;
@@ -182,14 +185,25 @@ typedef struct sObjInstance{
     
 }ObjInstance;
 
+DECLARE_BUFFER(Value, Value);
+
+typedef struct sMapItem{
+    Value key;
+    Value value;
+} MapItem;
+
+
 typedef struct sOjbList{
-    size_t n;
-    
+    ValueBuffer elements;
 }ObjList;
 
 typedef struct sObjMap{
-    
+    size_t count;
+    size_t capacity;
+    MapItem* items;
 }ObjMap;
+
+
 
 typedef struct sObjModule{
     
@@ -222,31 +236,33 @@ typedef struct sLionVm {
     SymbolTable methodNames;
 } LionVm;
 
-LionVm* newVm();
+LionVm* liNewVm();
+ObjFiber* liNewFiber();
 
-Value newString(LionVm* vm, const char* cstring);
-Value stringLength(LionVm* vm, ObjString* string);
-Value stringSub(LionVm* vm, ObjString* string, size_t start, size_t end);
+Value liNewString(LionVm* vm, const char* cstring);
+Value liStringLength(LionVm* vm, ObjString* string);
+Value liStringSub(LionVm* vm, ObjString* string, size_t start, size_t end);
 void  printString(Value v);
 
-Value newUpvalue(LionVm* vm);
+Value liNewUpvalue(LionVm* vm);
 
 
 
-Value newClass(LionVm* vm);
-Value classBindSuper(LionVm* vm, ObjClass* class, ObjClass* super_class);
+Value liNewClass(LionVm* vm);
+Value liClassBindSuper(LionVm* vm, ObjClass* class, ObjClass* super_class);
 
-Value newList(LionVm* vm);
-Value listInsert(LionVm* vm, ObjList* list, Value value);
-Value listRemove(LionVm* vm, ObjList* list, Value index);
-Value listSize(LionVm* vm, ObjList* list);
+Value liNewList(LionVm* vm, uint32_t size);
+void  liListInsert(LionVm* vm, ObjList* list, Value value, uint32_t index);
+void  liListRemove(LionVm* vm, ObjList* list, Value index);
+Value liListSize(LionVm* vm, ObjList* list);
 
-Value newMap(LionVm* vm);
-Value mapInsert(LionVm* vm, ObjMap* map, Value key, Value value);
-Value mapRemove(LionVm* vm, ObjMap* map, Value key);
-Value mapSize(LionVm* vm, ObjMap* map);
+Value liNewMap(LionVm* vm, uint32_t num_items);
+MapItem* liFindItem(LionVm* vm, ObjMap* map, Value key);
+void liMapInsert(LionVm* vm, ObjMap* map, Value key, Value value);
+void liMapRemove(LionVm* vm, ObjMap* map, Value key);
+Value liMapSize(LionVm* vm, ObjMap* map);
 
-Value newModule(LionVm* vm);
+Value liNewModule(LionVm* vm);
 
 static inline Value objectToValueOfTag(void* objptr, uint64_t tag){
     ValueBit vb;
@@ -279,14 +295,14 @@ static inline double valueToNum(Value value){
 
 #define valueToObj(value) (intptr_t) (value & OBJPOINTER_MASK)
 
-#define valueToString(value)    cast(ObjString, valueToObj(value))
-#define valueToClass(value)     cast(ObjClass,  valueToObj(value))
-#define valueToClosure(value)   cast(ObjClosure,  valueToObj(value))
-#define valueToFiber(value)     cast(ObjFiber,  valueToObj(value))
-#define valueToForeign(value)   cast(ObjForeign,  valueToObj(value))
-#define valueToInstance(value)  cast(ObjInstance,  valueToObj(value))
-#define valueToList(value)      cast(ObjList,  valueToObj(value))
-#define valueToMap(value)       cast(ObjMap,  valueToObj(value))
+#define valueToString(value)    cast(ObjString*, valueToObj(value))
+#define valueToClass(value)     cast(ObjClass*,  valueToObj(value))
+#define valueToClosure(value)   cast(ObjClosure*,  valueToObj(value))
+#define valueToFiber(value)     cast(ObjFiber*,  valueToObj(value))
+#define valueToForeign(value)   cast(ObjForeign*,  valueToObj(value))
+#define valueToInstance(value)  cast(ObjInstance*,  valueToObj(value))
+#define valueToList(value)      cast(ObjList*,  valueToObj(value))
+#define valueToMap(value)       cast(ObjMap*,  valueToObj(value))
 
 
 #endif

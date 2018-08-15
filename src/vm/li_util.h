@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#define cast(t, v) ((t*) (v))
+#define cast(t, v) ((t) (v))
 
 uint32_t hashString(const char* s);
 

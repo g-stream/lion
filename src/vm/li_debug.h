@@ -29,8 +29,10 @@ void printError(ErrorType err_type, const char* info);
 												} \
 											} \
 											while(0)
+#define UNREACHABLE() ASSERT(false, "unreachable code")
 #else
 #define DEBUG_ASSERT(condition, message)
+#define UNREACHABLE() 
 #endif
 
 #endif
