@@ -91,7 +91,7 @@ void liSymbolTableClear(LionVm* vm, SymbolTable* symbols)
 int liSymbolTableAdd(LionVm* vm, SymbolTable* symbols,
                        const char* name, size_t length)
 {
-  ObjString* symbol = valueToString(newString(vm, name));
+  ObjString* symbol = valueToString(liNewString(vm, name));
   
   liStringBufferWrite(vm, symbols, symbol);
   

@@ -2,5 +2,5 @@
 #include "li_value.h"
 #include "li_compiler.h"
 int main(){
-    test_li_ocmpiler();
+    test_li_compiler();
 }
