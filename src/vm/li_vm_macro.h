@@ -1,7 +1,5 @@
 #ifndef li_vm_macro_h
 #define li_vm_macro_h
-
-
 #define li_opcodes OPCODE(NULL,         0)\
                    OPCODE(ADD,          2) /*	A B C	R(A) := RK(B) + RK(C)				*/\
                    OPCODE(SUB,          2) /*	A B C	R(A) := RK(B) - RK(C)				*/\

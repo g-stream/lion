@@ -161,8 +161,6 @@ typedef struct sLexerState{
 
 
 
-
-
 #define OPCODE(name, effect) OPNAME(OP_##name)
 #define OPNAME(name) #name,
 const char* op_name[] = {
@@ -474,7 +472,6 @@ void test_li_compiler(){
     Value str = liNewString(&vm, cstr);
     printString(str);
     printf("%s", op_name[OP_ADD]);
-    
 }
 
 
