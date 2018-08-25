@@ -33,23 +33,32 @@ typedef Value* stkid_t;
  * Use the three bits before the bits setted for nan to reperesent singleton value types below
  * If the top most bit is setted, the value is a class, the lowest 32 bit is used to reperesent the pointer to the value
  */
+
+
+/*  [x]   [11111111111][xxxx][11111111 11111111 11111111 11111111 11111111 11111111]
+ *  [sign][nan bits   ][tag ][48bits for object pointer                            ]
+ *  sign bit to indecate if the value is a collectable object
+ */
+/* singleton value*/
 #define TAG_NAN         ((uint64_t)0 << 48)
 #define TAG_NIL         ((uint64_t)1 << 48)
 #define TAG_FALSE       ((uint64_t)2 << 48)
 #define TAG_TRUE        ((uint64_t)3 << 48)
 #define TAG_UNDEF       ((uint64_t)4 << 48)
-#define TAG_STRING      ((uint64_t)5 << 48)
-#define TAG_CLASS       ((uint64_t)6 << 48)
-#define TAG_CLOSURE     ((uint64_t)7 << 48)
-#define TAG_       ((uint64_t)8 << 48)
-#define TAG_FN          ((uint64_t)9 << 48)
-#define TAG_FOREIGH     ((uint64_t)10 << 48)
-#define TAG_INSTANCE    ((uint64_t)11 << 48)
-#define TAG_LIST        ((uint64_t)12 << 48)
-#define TAG_MAP         ((uint64_t)13 << 48)
 
-// Masks out the tag bits used to identify the singleton value.
-#define MASK_TAG      ((uint64_t)15 << 48)
+/*object value which can be collected*/
+#define TAG_STRING      (((uint64_t)1 << 48)|SIGN_BIT)
+#define TAG_CLASS       (((uint64_t)2 << 48)|SIGN_BIT)
+#define TAG_CLOSURE     (((uint64_t)3 << 48)|SIGN_BIT)
+#define TAG_UPVALUE     (((uint64_t)4 << 48)|SIGN_BIT)
+#define TAG_FN          (((uint64_t)5 << 48)|SIGN_BIT)
+#define TAG_FOREIGN     (((uint64_t)6 << 48)|SIGN_BIT)
+#define TAG_INSTANCE    (((uint64_t)7 << 48)|SIGN_BIT)
+#define TAG_LIST        (((uint64_t)8 << 48)|SIGN_BIT)
+#define TAG_MAP         (((uint64_t)9 << 48)|SIGN_BIT)
+
+// Masks out the tag bits used to identify the  tag.
+#define MASK_TAG      (((uint64_t)15 << 48)|SIGN_BIT)
 
 // Singleton values.
 #define NIL_VAL      ((Value)(uint64_t)(QNAN | TAG_NIL))
@@ -63,9 +72,21 @@ typedef Value* stkid_t;
 #define IS_FALSE(value)     ((value) == FALSE_VAL)
 #define IS_TRUE(value)      ((value) == TRUE_VAL)
 #define IS_BOOLEAN(value)   (IS_FALSE(value) || IS_TRUE(value))
-#define IS_NULL(value)      ((value) == NIL_VAL)
-#define IS_UNDEF(value)     ((value) == UNDEFINED_VAL)
-#define IS_STR(value)       (((value)&(QNAN | MASK_TAG | SIGN_BIT)) == (QNAN | TAG_STR))
+#define IS_NIL(value)       ((value) == NIL_VAL)
+#define IS_UNDEF(value)     ((value) == UNDEF_VAL)
+
+#define IS_STRING(value)    (IS_OBJ(value)&&(GET_TAG(value) == TAG_STRING))
+#define IS_CLASS(value)     (IS_OBJ(value)&&(GET_TAG(value) == TAG_CLASS))
+#define IS_CLOSURE(value)   (IS_OBJ(value)&&(GET_TAG(value) == TAG_CLOSURE))
+#define IS_UPVALUE(value)   (IS_OBJ(value)&&(GET_TAG(value) == TAG_UPVALUE))
+#define IS_FN(value)        (IS_OBJ(value)&&(GET_TAG(value) == TAG_FN))
+#define IS_FOREIGN(value)   (IS_OBJ(value)&&(GET_TAG(value) == TAG_FOREIGN))
+#define IS_INSTANCE(value)  (IS_OBJ(value)&&(GET_TAG(value) == TAG_INSTANCE))
+#define IS_LIST(value)      (IS_OBJ(value)&&(GET_TAG(value) == TAG_LIST))
+#define IS_MAP(value)       (IS_OBJ(value)&&(GET_TAG(value) == TAG_MAP))
+
+#define GET_TAG(value) ((uint64_t)((value)&(MASK_TAG)))
+
 
 
 
@@ -86,19 +107,10 @@ typedef union {
     uint32_t as2Uint32[2];
 } ValueBit;
 
-
-
-typedef enum{
-    VAL_NULL,
-    VAL_FALSE,
-    VAL_TRUE,
-    VAL_NUM,
-    VAL_STR,
-    VAL_UNDEF,
-    VAL_OBJ
-} ValueType;
-
 void printValue(Value v);
+
+bool liEqual(Value l, Value r);
+bool liNEqual(Value l, Value r);
 
 Value liNumNeg(Value v);
 Value liNumAdd(Value l, Value r);
@@ -190,6 +202,7 @@ DECLARE_BUFFER(Value, Value);
 typedef struct sMapItem{
     Value key;
     Value value;
+    uint32_t hash;
 } MapItem;
 
 
@@ -257,10 +270,10 @@ void  liListRemove(LionVm* vm, ObjList* list, Value index);
 Value liListSize(LionVm* vm, ObjList* list);
 
 Value liNewMap(LionVm* vm, uint32_t num_items);
-MapItem* liFindItem(LionVm* vm, ObjMap* map, Value key);
-void liMapInsert(LionVm* vm, ObjMap* map, Value key, Value value);
-void liMapRemove(LionVm* vm, ObjMap* map, Value key);
-Value liMapSize(LionVm* vm, ObjMap* map);
+bool  liExistKey(LionVm* vm, ObjMap* map, Value key);
+void  liMapUpdate(LionVm* vm, ObjMap* map, Value key, Value value);
+void  liMapRemove(LionVm* vm, ObjMap* map, Value key);
+int   liMapSize(LionVm* vm, ObjMap* map);
 
 Value liNewModule(LionVm* vm);
 
