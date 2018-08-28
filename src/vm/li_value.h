@@ -167,10 +167,13 @@ typedef struct sObjClosure
 {
     ObjFn* fn;
     ObjUpvalue* upvalues;
+    instruction_t* code;
+    int code_size;
 } ObjClosure;
 
 typedef struct sCallFrame {
-    instruction_t* ip;
+    stkid_t stack,stack_top;
+    struct sCallFrame *pre, *next;
     ObjClosure* closure;
     Value* stack_start;
 } CallFrame;
